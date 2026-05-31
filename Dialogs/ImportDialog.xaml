@@ -1,0 +1,69 @@
+<Window x:Class="TAM.Dialogs.ImportDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Import Data" Height="420" Width="500"
+        WindowStyle="ToolWindow" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        FontFamily="Segoe UI">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="#AD1457" Padding="20,16">
+            <StackPanel>
+                <TextBlock Text="Import Data" FontSize="16" FontWeight="SemiBold" Foreground="White"/>
+                <TextBlock Text="Choose how to handle existing data" FontSize="12" Foreground="#F8BBD0" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" Padding="24,16">
+            <StackPanel>
+                <!-- Preview -->
+                <Border Background="#F5F5F5" CornerRadius="8" Padding="16" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="Backup File Contents" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Vendors:" Style="{StaticResource SectionLabel}"/>
+                            <TextBlock x:Name="VendorCount" Grid.Row="0" Grid.Column="1" FontSize="13" FontWeight="SemiBold"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Accessories:" Style="{StaticResource SectionLabel}" Margin="0,6,0,0"/>
+                            <TextBlock x:Name="AccessoryCount" Grid.Row="1" Grid.Column="1" FontSize="13" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Orders:" Style="{StaticResource SectionLabel}" Margin="0,6,0,0"/>
+                            <TextBlock x:Name="OrderCount" Grid.Row="2" Grid.Column="1" FontSize="13" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                        </Grid>
+                        <TextBlock x:Name="ExportedAtText" FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Import mode -->
+                <TextBlock Text="Import Mode" Style="{StaticResource SectionLabel}" Margin="0,0,0,8"/>
+                <RadioButton x:Name="AppendRadio" Content="Append - Add to existing data (duplicates are skipped)"
+                             IsChecked="True" FontSize="13" Margin="0,0,0,10"/>
+                <RadioButton x:Name="ReplaceRadio" Content="Replace - Clear all existing data and load import"
+                             FontSize="13" Foreground="#E53935"/>
+                <Border Background="#FFF8E1" CornerRadius="6" Padding="12" Margin="0,12,0,0">
+                    <TextBlock Text="Warning: Replace mode will permanently delete all current data!" FontSize="12"
+                               Foreground="#E65100" TextWrapping="Wrap"/>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="2" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" Padding="24,14">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Cancel" IsCancel="True" Style="{StaticResource SecondaryButton}" Width="90" Margin="0,0,10,0"/>
+                <Button x:Name="ImportBtn" Content="Import" Style="{StaticResource PrimaryButton}" Width="90" Click="ImportBtn_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

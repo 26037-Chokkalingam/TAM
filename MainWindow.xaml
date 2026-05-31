@@ -1,0 +1,112 @@
+<Window x:Class="TAM.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:TAM.ViewModels"
+        Title="TAM – TrackFun Accessories Management"
+        Height="760" Width="1200" MinHeight="600" MinWidth="900"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI">
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <!-- Resources MUST come before the visual tree -->
+    <Window.Resources>
+        <Style x:Key="NavButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                BorderThickness="3,0,0,0" BorderBrush="Transparent">
+                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#880E4F"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#E91E63"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#880E4F"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- SIDEBAR -->
+        <Border Grid.Column="0" Background="#AD1457">
+            <DockPanel>
+                <!-- App Title -->
+                <Border DockPanel.Dock="Top" Padding="20,24,20,20" BorderBrush="#880E4F" BorderThickness="0,0,0,1">
+                    <StackPanel>
+                        <TextBlock Text="TAM" FontSize="28" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="TrackFun Accessories" FontSize="11" Foreground="#F8BBD0" Margin="0,2,0,0"/>
+                        <TextBlock Text="Management" FontSize="11" Foreground="#F8BBD0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Footer (docked to bottom first so it stays at bottom) -->
+                <Border DockPanel.Dock="Bottom" Padding="16,12" BorderBrush="#880E4F" BorderThickness="0,1,0,0">
+                    <TextBlock Text="v1.0.0" FontSize="11" Foreground="#F8BBD0" HorizontalAlignment="Center"/>
+                </Border>
+
+                <!-- Nav Items -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,12,0,0">
+                        <Button Content="  Dashboard" Tag="Dashboard" Click="NavButton_Click"
+                                Style="{StaticResource NavButton}"/>
+                        <Button Content="  Vendors" Tag="Vendors" Click="NavButton_Click"
+                                Style="{StaticResource NavButton}"/>
+                        <Button Content="  Accessories" Tag="Accessories" Click="NavButton_Click"
+                                Style="{StaticResource NavButton}"/>
+
+                        <Border Margin="16,8" BorderBrush="#880E4F" BorderThickness="0,0,0,1" Opacity="0.5"/>
+                        <TextBlock Text="ORDERS" FontSize="10" Foreground="#F8BBD0" Margin="16,4,0,4" FontWeight="SemiBold"/>
+
+                        <Button Content="  Purchase Orders" Tag="PurchaseOrders" Click="NavButton_Click"
+                                Style="{StaticResource NavButton}"/>
+                        <Button Content="  Inward Orders" Tag="InwardOrders" Click="NavButton_Click"
+                                Style="{StaticResource NavButton}"/>
+                        <Button Content="  Outward Orders" Tag="OutwardOrders" Click="NavButton_Click"
+                                Style="{StaticResource NavButton}"/>
+                        <Button Content="  Return Orders" Tag="ReturnOrders" Click="NavButton_Click"
+                                Style="{StaticResource NavButton}"/>
+
+                        <Border Margin="16,8" BorderBrush="#880E4F" BorderThickness="0,0,0,1" Opacity="0.5"/>
+                        <TextBlock Text="REPORTS" FontSize="10" Foreground="#F8BBD0" Margin="16,4,0,4" FontWeight="SemiBold"/>
+
+                        <Button Content="  Summary" Tag="Summary" Click="NavButton_Click"
+                                Style="{StaticResource NavButton}"/>
+                        <Button Content="  Audit Log" Tag="AuditLog" Click="NavButton_Click"
+                                Style="{StaticResource NavButton}"/>
+                        <Button Content="  Backup &amp; Restore" Tag="Backup" Click="NavButton_Click"
+                                Style="{StaticResource NavButton}"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <!-- CONTENT AREA -->
+        <Grid Grid.Column="1" Background="#F5F5F5">
+            <ContentControl Content="{Binding CurrentViewModel}" Margin="0"/>
+        </Grid>
+    </Grid>
+</Window>

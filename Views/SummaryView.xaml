@@ -1,0 +1,117 @@
+<UserControl x:Class="TAM.Views.SummaryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="28,24,28,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Stock Summary" Style="{StaticResource PageTitle}"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Content="Export Excel" Command="{Binding ExportExcelCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
+                <Button Content="Export PDF" Command="{Binding ExportPdfCommand}" Style="{StaticResource PrimaryButton}"/>
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+            <Border.Effect>
+                <DropShadowEffect Color="#10000000" BlurRadius="4" ShadowDepth="1"/>
+            </Border.Effect>
+            <StackPanel Orientation="Horizontal">
+                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource FormTextBox}" Width="200"/>
+                <TextBlock Text="Vendor:" VerticalAlignment="Center" Margin="16,0,8,0" Foreground="{StaticResource TextSecondary}"/>
+                <ComboBox ItemsSource="{Binding VendorFilter}" SelectedItem="{Binding FilterVendor}"
+                          Style="{StaticResource FormComboBox}" Width="160"/>
+                <TextBlock Text="Accessory:" VerticalAlignment="Center" Margin="16,0,8,0" Foreground="{StaticResource TextSecondary}"/>
+                <ComboBox ItemsSource="{Binding AccessoryFilter}" SelectedItem="{Binding FilterAccessory}"
+                          Style="{StaticResource FormComboBox}" Width="160"/>
+                <Button Content="Clear" Command="{Binding ClearFilterCommand}" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0"/>
+                <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="2" Background="White" CornerRadius="8">
+            <Border.Effect>
+                <DropShadowEffect Color="#10000000" BlurRadius="4" ShadowDepth="1"/>
+            </Border.Effect>
+            <DataGrid ItemsSource="{Binding Rows}" Style="{StaticResource AppDataGrid}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Code" Binding="{Binding AccessoryCode}" Width="90"/>
+                    <DataGridTextColumn Header="Accessory Name" Binding="{Binding Name}" Width="*"/>
+                    <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="110"/>
+                    <DataGridTextColumn Header="Unit" Binding="{Binding Unit}" Width="65"/>
+                    <DataGridTemplateColumn Header="Stock" Width="90" SortMemberPath="CurrentStock">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding CurrentStock}" FontWeight="SemiBold" Margin="8,0">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsLowStock}" Value="True">
+                                                    <Setter Property="Foreground" Value="#E53935"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Min Stock" Binding="{Binding MinimumStock}" Width="80"/>
+                    <DataGridTextColumn Header="Total In" Binding="{Binding TotalInward}" Width="80"/>
+                    <DataGridTextColumn Header="Total Out" Binding="{Binding TotalOutward}" Width="80"/>
+                    <DataGridTextColumn Header="Returned" Binding="{Binding TotalReturned}" Width="80"/>
+                    <DataGridTemplateColumn Header="Status" Width="90" SortMemberPath="StockStatus">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="10" Padding="8,3" HorizontalAlignment="Left">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#E8F5E9"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsLowStock}" Value="True">
+                                                    <Setter Property="Background" Value="#FFEBEE"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock Text="{Binding StockStatus}" FontSize="11" FontWeight="SemiBold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="#2E7D32"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsLowStock}" Value="True">
+                                                        <Setter Property="Foreground" Value="#C62828"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Vendors" Binding="{Binding VendorsSummary}" Width="180"/>
+                </DataGrid.Columns>
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsLowStock}" Value="True">
+                                <Setter Property="Background" Value="#FFF8E1"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>

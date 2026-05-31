@@ -1,0 +1,61 @@
+<UserControl x:Class="TAM.Views.InwardOrderView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="28,24,28,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Inward Orders" Style="{StaticResource PageTitle}"/>
+            <Button Grid.Column="1" Content="+ Direct Inward" Command="{Binding AddDirectCommand}"
+                    Style="{StaticResource PrimaryButton}" VerticalAlignment="Center"/>
+        </Grid>
+
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+            <Border.Effect>
+                <DropShadowEffect Color="#10000000" BlurRadius="4" ShadowDepth="1"/>
+            </Border.Effect>
+            <StackPanel Orientation="Horizontal">
+                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource FormTextBox}" Width="260"/>
+                <Button Content="Edit" Command="{Binding EditCommand}" Style="{StaticResource SecondaryButton}" Margin="16,0,0,0"/>
+                <Button Content="Edit History" Command="{Binding ViewHistoryCommand}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"/>
+                <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="2" Background="White" CornerRadius="8">
+            <Border.Effect>
+                <DropShadowEffect Color="#10000000" BlurRadius="4" ShadowDepth="1"/>
+            </Border.Effect>
+            <DataGrid ItemsSource="{Binding Orders}" SelectedItem="{Binding Selected}"
+                      Style="{StaticResource AppDataGrid}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Inward No." Binding="{Binding InwardNumber}" Width="130"/>
+                    <DataGridTextColumn Header="Bill No." Binding="{Binding BillNo}" Width="110"/>
+                    <DataGridTextColumn Header="Vendor" Width="130">
+                        <DataGridTextColumn.Binding>
+                            <Binding Path="VendorId" Converter="{StaticResource VendorName}"/>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="PO Reference" Width="110">
+                        <DataGridTextColumn.Binding>
+                            <Binding Path="POId" Converter="{StaticResource POIdToRef}"/>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Items" Binding="{Binding Items.Count}" Width="60"/>
+                    <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="*"/>
+                    <DataGridTextColumn Header="Date" Binding="{Binding InwardDate, StringFormat='dd-MM-yyyy'}" Width="100"/>
+                    <DataGridTextColumn Header="Created" Binding="{Binding CreatedAt, StringFormat='dd-MM-yyyy'}" Width="100"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>
