@@ -71,6 +71,7 @@ public class OutwardStatusToColorConverter : IValueConverter
                 OutwardOrderStatus.Active => new SolidColorBrush(Color.FromRgb(76, 175, 80)),
                 OutwardOrderStatus.PartiallyReturned => new SolidColorBrush(Color.FromRgb(33, 150, 243)),
                 OutwardOrderStatus.FullyReturned => new SolidColorBrush(Color.FromRgb(158, 158, 158)),
+                OutwardOrderStatus.Closed => new SolidColorBrush(Color.FromRgb(69, 90, 100)),
                 _ => new SolidColorBrush(Colors.Gray)
             };
         }

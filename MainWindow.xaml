@@ -180,7 +180,40 @@
                         </Button>
 
                         <Border Margin="16,8" BorderBrush="#880E4F" BorderThickness="0,0,0,1" Opacity="0.4"/>
+                        <TextBlock Text="SETTINGS" FontSize="10" Foreground="#F8BBD0" Margin="20,4,0,4" FontWeight="SemiBold"/>
+
+                        <Button Tag="ManageAddon" Click="NavButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ActiveNav}" Value="ManageAddon">
+                                            <Setter Property="Background" Value="#880E4F"/>
+                                            <Setter Property="BorderBrush" Value="#F06292"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            Manage Add-Ons
+                        </Button>
+
+                        <Border Margin="16,8" BorderBrush="#880E4F" BorderThickness="0,0,0,1" Opacity="0.4"/>
                         <TextBlock Text="REPORTS" FontSize="10" Foreground="#F8BBD0" Margin="20,4,0,4" FontWeight="SemiBold"/>
+
+                        <Button Tag="VendorSummary" Click="NavButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ActiveNav}" Value="VendorSummary">
+                                            <Setter Property="Background" Value="#880E4F"/>
+                                            <Setter Property="BorderBrush" Value="#F06292"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            Vendor Summary
+                        </Button>
 
                         <Button Tag="Summary" Click="NavButton_Click">
                             <Button.Style>

@@ -15,6 +15,8 @@ public class MainViewModel : BaseViewModel
     public SummaryViewModel Summary { get; } = new();
     public AuditLogViewModel AuditLog { get; } = new();
     public BackupViewModel Backup { get; } = new();
+    public ManageAddonViewModel ManageAddon { get; } = new();
+    public VendorSummaryViewModel VendorSummary { get; } = new();
 
     public BaseViewModel CurrentViewModel { get => _currentViewModel; set => SetProperty(ref _currentViewModel, value); }
     public string ActiveNav { get => _activeNav; set => SetProperty(ref _activeNav, value); }
@@ -66,6 +68,14 @@ public class MainViewModel : BaseViewModel
                 break;
             case "Backup":
                 CurrentViewModel = Backup;
+                break;
+            case "ManageAddon":
+                ManageAddon.Refresh();
+                CurrentViewModel = ManageAddon;
+                break;
+            case "VendorSummary":
+                VendorSummary.Refresh();
+                CurrentViewModel = VendorSummary;
                 break;
             default:
                 Dashboard.Refresh();

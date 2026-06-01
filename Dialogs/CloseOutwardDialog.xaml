@@ -1,0 +1,59 @@
+<Window x:Class="TAM.Dialogs.CloseOutwardDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Close Outward Order" Height="520" Width="680"
+        WindowStyle="ToolWindow" ResizeMode="CanResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        MinHeight="420" MinWidth="560" FontFamily="Segoe UI">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="#AD1457" Padding="20,16">
+            <StackPanel>
+                <TextBlock Text="Close Outward Order" FontSize="16" FontWeight="SemiBold" Foreground="White"/>
+                <TextBlock x:Name="SubtitleText" FontSize="12" Foreground="#F8BBD0" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,16">
+            <StackPanel>
+                <TextBlock Text="Enter how many of each accessory were consumed/used. The remainder (dispatched − used − already returned) will be shown as In Hand."
+                           FontSize="12" Foreground="#757575" TextWrapping="Wrap" Margin="0,0,0,16"/>
+
+                <Border x:Name="ErrorPanel" Background="#FFEBEE" CornerRadius="6" Padding="12" Margin="0,0,0,12" Visibility="Collapsed">
+                    <TextBlock x:Name="ErrorText" Foreground="#C62828" FontSize="13" TextWrapping="Wrap"/>
+                </Border>
+
+                <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4">
+                    <DataGrid x:Name="ItemsGrid" AutoGenerateColumns="False" CanUserAddRows="False"
+                              CanUserDeleteRows="False" SelectionMode="Single" MinHeight="120"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                              HorizontalGridLinesBrush="#F5F5F5">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Accessory" Binding="{Binding AccessoryName}" Width="*" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Dispatched" Binding="{Binding Quantity}" Width="90" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Returned" Binding="{Binding ReturnedQuantity}" Width="90" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Used *" Binding="{Binding UsedQuantity, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
+                            <DataGridTextColumn Header="In Hand" Binding="{Binding InHand}" Width="90" IsReadOnly="True"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+
+                <TextBlock Text="Notes" Style="{StaticResource SectionLabel}" Margin="0,16,0,0"/>
+                <TextBox x:Name="NotesBox" Style="{StaticResource FormTextBox}" Height="50"
+                         AcceptsReturn="True" TextWrapping="Wrap"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="2" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" Padding="24,14">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Cancel" IsCancel="True" Style="{StaticResource SecondaryButton}" Width="90" Margin="0,0,10,0"/>
+                <Button Content="Close Order" Style="{StaticResource DangerButton}" Width="120" Click="SaveBtn_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

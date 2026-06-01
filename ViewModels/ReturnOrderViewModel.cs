@@ -46,7 +46,8 @@ public class ReturnOrderViewModel : BaseViewModel, IRefreshable
         var q = SearchText.ToLower();
         var result = _orders.Where(r =>
             (string.IsNullOrWhiteSpace(q) || r.ReturnNumber.ToLower().Contains(q) ||
-             DataService.Instance.GetOutwardById(r.OutwardId)?.OutwardNumber.ToLower().Contains(q) == true) &&
+             DataService.Instance.GetOutwardById(r.OutwardId)?.OutwardNumber.ToLower().Contains(q) == true ||
+             r.Items.Any(i => DataService.Instance.GetAccessoryName(i.AccessoryId).ToLower().Contains(q))) &&
             (FilterDateFrom == null || r.ReturnDate.Date >= FilterDateFrom.Value.Date) &&
             (FilterDateTo == null || r.ReturnDate.Date <= FilterDateTo.Value.Date));
         Orders = new ObservableCollection<ReturnOrder>(result);

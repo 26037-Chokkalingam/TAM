@@ -32,7 +32,9 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Category" Style="{StaticResource SectionLabel}"/>
-                        <TextBox x:Name="CategoryBox" Style="{StaticResource FormTextBox}"/>
+                        <ComboBox x:Name="CategoryBox" Style="{StaticResource FormComboBox}"
+                                  IsEditable="True" IsTextSearchEnabled="False" StaysOpenOnEdit="True"
+                                  TextBoxBase.TextChanged="CategoryFilter_TextChanged"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2">
                         <TextBlock Text="Unit" Style="{StaticResource SectionLabel}"/>

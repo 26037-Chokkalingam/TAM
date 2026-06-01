@@ -16,6 +16,7 @@ public class DataService
     private List<InwardOrder> _inwardOrders = new();
     private List<OutwardOrder> _outwardOrders = new();
     private List<ReturnOrder> _returnOrders = new();
+    private AddonData _addons = new();
 
     private DataService()
     {
@@ -33,6 +34,7 @@ public class DataService
         _inwardOrders = Load<List<InwardOrder>>("inward_orders.json") ?? new();
         _outwardOrders = Load<List<OutwardOrder>>("outward_orders.json") ?? new();
         _returnOrders = Load<List<ReturnOrder>>("return_orders.json") ?? new();
+        _addons = Load<AddonData>("addons.json") ?? new();
     }
 
     private T? Load<T>(string file) where T : class
@@ -458,6 +460,90 @@ public class DataService
         var existing = target.Select(getId).ToHashSet();
         foreach (var item in source)
             if (!existing.Contains(getId(item))) target.Add(item);
+    }
+
+    // ── ADD-ONS (Categories + Styles) ────────────────────────────────────────
+
+    public IReadOnlyList<AddonItem> GetCategories() => _addons.Categories.AsReadOnly();
+    public IReadOnlyList<AddonItem> GetStyles() => _addons.Styles.AsReadOnly();
+
+    public bool IsCategoryNameUnique(string name, string? excludeId = null)
+        => !_addons.Categories.Any(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && c.Id != excludeId);
+
+    public bool IsStyleNameUnique(string name, string? excludeId = null)
+        => !_addons.Styles.Any(s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && s.Id != excludeId);
+
+    public void AddCategory(AddonItem item)
+    {
+        _addons.Categories.Add(item);
+        Save("addons.json", _addons);
+    }
+
+    public void UpdateCategory(AddonItem item)
+    {
+        var idx = _addons.Categories.FindIndex(c => c.Id == item.Id);
+        if (idx >= 0) { _addons.Categories[idx] = item; Save("addons.json", _addons); }
+    }
+
+    public void DeleteCategory(string id)
+    {
+        _addons.Categories.RemoveAll(c => c.Id == id);
+        Save("addons.json", _addons);
+    }
+
+    public void AddStyle(AddonItem item)
+    {
+        _addons.Styles.Add(item);
+        Save("addons.json", _addons);
+    }
+
+    public void UpdateStyle(AddonItem item)
+    {
+        var idx = _addons.Styles.FindIndex(s => s.Id == item.Id);
+        if (idx >= 0) { _addons.Styles[idx] = item; Save("addons.json", _addons); }
+    }
+
+    public void DeleteStyle(string id)
+    {
+        _addons.Styles.RemoveAll(s => s.Id == id);
+        Save("addons.json", _addons);
+    }
+
+    // ── CLOSE OUTWARD ORDER ──────────────────────────────────────────────────
+
+    public bool CloseOutwardOrder(OutwardOrder outward, Dictionary<string, decimal> usedQtys, out string error)
+    {
+        error = string.Empty;
+        var idx = _outwardOrders.FindIndex(x => x.OutwardId == outward.OutwardId);
+        if (idx < 0) { error = "Order not found."; return false; }
+
+        foreach (var item in outward.Items)
+        {
+            var used = usedQtys.TryGetValue(item.ItemId, out var u) ? u : 0;
+            if (used < 0) { error = "Used quantity cannot be negative."; return false; }
+            if (used + item.ReturnedQuantity > item.Quantity)
+            {
+                var accName = GetAccessoryName(item.AccessoryId);
+                error = $"Used + Returned ({used + item.ReturnedQuantity}) exceeds dispatched ({item.Quantity}) for '{accName}'.";
+                return false;
+            }
+        }
+
+        var oldJson = JsonConvert.SerializeObject(_outwardOrders[idx]);
+        foreach (var item in outward.Items)
+            item.UsedQuantity = usedQtys.TryGetValue(item.ItemId, out var u) ? u : 0;
+
+        outward.Status = OutwardOrderStatus.Closed;
+        outward.EditHistory.Insert(0, new EditHistoryEntry
+        {
+            ChangeDescription = "Order closed",
+            SnapshotJson = oldJson,
+            ChangedAt = DateTime.Now
+        });
+        _outwardOrders[idx] = outward;
+        Save("outward_orders.json", _outwardOrders);
+        AuditService.Instance.Log("UPDATE", "OutwardOrder", $"Closed outward order: {outward.OutwardNumber}", outward.OutwardId);
+        return true;
     }
 
     // ── LOOKUPS ──────────────────────────────────────────────────────────────

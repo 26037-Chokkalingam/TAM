@@ -50,7 +50,8 @@ public class InwardOrderViewModel : BaseViewModel, IRefreshable
         var result = _orders.Where(i =>
             (string.IsNullOrWhiteSpace(q) || i.InwardNumber.ToLower().Contains(q) ||
              i.BillNo.ToLower().Contains(q) ||
-             DataService.Instance.GetVendorName(i.VendorId).ToLower().Contains(q)) &&
+             DataService.Instance.GetVendorName(i.VendorId).ToLower().Contains(q) ||
+             i.Items.Any(it => DataService.Instance.GetAccessoryName(it.AccessoryId).ToLower().Contains(q))) &&
             (FilterDateFrom == null || i.InwardDate.Date >= FilterDateFrom.Value.Date) &&
             (FilterDateTo == null || i.InwardDate.Date <= FilterDateTo.Value.Date));
         Orders = new ObservableCollection<InwardOrder>(result);

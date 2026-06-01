@@ -45,10 +45,12 @@ public partial class OutwardOrderDialog : Window
         var vendors = DataService.Instance.GetVendors().Where(v => v.IsActive).ToList();
         RecipientCombo.ItemsSource = vendors;
 
+        // Populate style combo
+        LoadStyles();
+
         if (outward != null)
         {
             TitleText.Text = "Edit Outward Order";
-            // Try to match existing recipient text to vendor; if not found, set as text
             var matchedVendor = vendors.FirstOrDefault(v => v.Name == outward.Recipient);
             if (matchedVendor != null)
                 RecipientCombo.SelectedItem = matchedVendor;
@@ -56,12 +58,30 @@ public partial class OutwardOrderDialog : Window
                 RecipientCombo.Text = outward.Recipient;
 
             PurposeBox.Text = outward.Purpose;
+            StyleCombo.Text = outward.Style;
             OutwardDatePicker.SelectedDate = outward.OutwardDate;
             NotesBox.Text = outward.Notes;
             foreach (var item in outward.Items)
                 ItemRows.Add(new OutwardItemRow { AccessoryId = item.AccessoryId, Quantity = item.Quantity });
         }
         ItemsGrid.ItemsSource = ItemRows;
+    }
+
+    private void LoadStyles()
+    {
+        var styles = DataService.Instance.GetStyles().Select(s => s.Name).ToList();
+        StyleCombo.ItemsSource = styles;
+    }
+
+    private void StyleFilter_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        if (sender is not ComboBox cb) return;
+        var all = DataService.Instance.GetStyles().Select(s => s.Name).ToList();
+        if (cb.SelectedItem is string sel && sel == cb.Text) { cb.ItemsSource = all; return; }
+        cb.ItemsSource = string.IsNullOrWhiteSpace(cb.Text)
+            ? all
+            : all.Where(n => n.Contains(cb.Text, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (!cb.IsDropDownOpen && !string.IsNullOrEmpty(cb.Text)) cb.IsDropDownOpen = true;
     }
 
     private void AddItem_Click(object sender, RoutedEventArgs e)
@@ -74,7 +94,6 @@ public partial class OutwardOrderDialog : Window
 
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
     {
-        // Cancel any in-progress DataGrid cell edit to prevent WPF dispatcher stall
         try { ItemsGrid.CancelEdit(DataGridEditingUnit.Row); } catch { }
         base.OnClosing(e);
     }
@@ -108,11 +127,11 @@ public partial class OutwardOrderDialog : Window
         if (!cb.IsDropDownOpen && !string.IsNullOrEmpty(cb.Text)) cb.IsDropDownOpen = true;
     }
 
-    private string GetRecipient()
-    {
-        if (RecipientCombo.SelectedItem is Vendor v) return v.Name;
-        return RecipientCombo.Text?.Trim() ?? string.Empty;
-    }
+    private string GetRecipient() =>
+        RecipientCombo.SelectedItem is Vendor v ? v.Name : RecipientCombo.Text?.Trim() ?? string.Empty;
+
+    private string GetRecipientVendorId() =>
+        RecipientCombo.SelectedItem is Vendor v ? v.VendorId : string.Empty;
 
     private void SaveBtn_Click(object sender, RoutedEventArgs e)
     {
@@ -123,6 +142,15 @@ public partial class OutwardOrderDialog : Window
             if (string.IsNullOrWhiteSpace(recipient))
             {
                 MessageBox.Show("Recipient is required.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            var style = StyleCombo.Text?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(style))
+            {
+                if (!DataService.Instance.GetStyles().Any())
+                    MessageBox.Show("No styles configured. Please add styles in Manage Add-On first.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                else
+                    MessageBox.Show("Style is required.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             if (!ItemRows.Any())
@@ -149,7 +177,9 @@ public partial class OutwardOrderDialog : Window
                 var outward = new OutwardOrder
                 {
                     Recipient = recipient,
+                    RecipientVendorId = GetRecipientVendorId(),
                     Purpose = PurposeBox.Text.Trim(),
+                    Style = style,
                     OutwardDate = OutwardDatePicker.SelectedDate ?? DateTime.Today,
                     Notes = NotesBox.Text.Trim(),
                     Items = ItemRows.Select(r => new OutwardOrderItem
@@ -167,13 +197,12 @@ public partial class OutwardOrderDialog : Window
             }
             else
             {
-                // Clone so DataService can snapshot the true old state — _existing is the same
-                // reference as the object in DataService's list, mutating it directly would
-                // corrupt the snapshot inside UpdateOutwardOrder.
                 var updatedOrder = JsonConvert.DeserializeObject<OutwardOrder>(
                     JsonConvert.SerializeObject(_existing))!;
                 updatedOrder.Recipient = recipient;
+                updatedOrder.RecipientVendorId = GetRecipientVendorId();
                 updatedOrder.Purpose = PurposeBox.Text.Trim();
+                updatedOrder.Style = style;
                 updatedOrder.OutwardDate = OutwardDatePicker.SelectedDate ?? DateTime.Today;
                 updatedOrder.Notes = NotesBox.Text.Trim();
                 var newItems = ItemRows.Select(r => new OutwardOrderItem
@@ -183,7 +212,7 @@ public partial class OutwardOrderDialog : Window
                 foreach (var ni in newItems)
                 {
                     var old = _existing!.Items.FirstOrDefault(i => i.AccessoryId == ni.AccessoryId);
-                    if (old != null) ni.ReturnedQuantity = old.ReturnedQuantity;
+                    if (old != null) { ni.ReturnedQuantity = old.ReturnedQuantity; ni.UsedQuantity = old.UsedQuantity; }
                 }
                 updatedOrder.Items = newItems;
                 if (!DataService.Instance.UpdateOutwardOrder(updatedOrder, out var error))

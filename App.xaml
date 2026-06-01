@@ -31,6 +31,7 @@
             <h:BoolToVisibilityConverter x:Key="BoolToVis"/>
             <h:InverseBoolToVisibilityConverter x:Key="InvBoolToVis"/>
             <h:NullToVisibilityConverter x:Key="NullToVis"/>
+            <h:InverseNullToVisibilityConverter x:Key="InvNullToVis"/>
             <h:POStatusToColorConverter x:Key="POStatusColor"/>
             <h:OutwardStatusToColorConverter x:Key="OutwardStatusColor"/>
             <h:BoolToStringConverter x:Key="BoolToStr" TrueValue="Active" FalseValue="Inactive"/>
@@ -301,6 +302,12 @@
             </DataTemplate>
             <DataTemplate DataType="{x:Type vm:BackupViewModel}">
                 <views:BackupView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:ManageAddonViewModel}">
+                <views:ManageAddonView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:VendorSummaryViewModel}">
+                <views:VendorSummaryView/>
             </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>

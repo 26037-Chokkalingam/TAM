@@ -53,7 +53,8 @@ public class PurchaseOrderViewModel : BaseViewModel, IRefreshable
         var q = SearchText.ToLower();
         var result = _orders.Where(p =>
             (string.IsNullOrWhiteSpace(q) || p.PONumber.ToLower().Contains(q) ||
-             DataService.Instance.GetVendorName(p.VendorId).ToLower().Contains(q)) &&
+             DataService.Instance.GetVendorName(p.VendorId).ToLower().Contains(q) ||
+             p.Items.Any(i => DataService.Instance.GetAccessoryName(i.AccessoryId).ToLower().Contains(q))) &&
             (FilterStatus == null || p.Status == FilterStatus) &&
             (FilterDateFrom == null || p.CreatedAt.Date >= FilterDateFrom.Value.Date) &&
             (FilterDateTo == null || p.CreatedAt.Date <= FilterDateTo.Value.Date));

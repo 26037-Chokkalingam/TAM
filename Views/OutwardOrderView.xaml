@@ -28,12 +28,13 @@
                          Style="{StaticResource FormTextBox}" Width="200"
                          Tag="Search outward orders…" VerticalAlignment="Center"/>
                 <TextBlock Text="Status:" VerticalAlignment="Center" Margin="12,0,6,0" Foreground="{StaticResource TextSecondary}"/>
-                <ComboBox SelectedItem="{Binding FilterStatus}" Style="{StaticResource FormComboBox}" Width="130" VerticalAlignment="Center">
+                <ComboBox SelectedItem="{Binding FilterStatus}" Style="{StaticResource FormComboBox}" Width="140" VerticalAlignment="Center">
                     <ComboBox.Items>
                         <x:Null/>
                         <models:OutwardOrderStatus>Active</models:OutwardOrderStatus>
                         <models:OutwardOrderStatus>PartiallyReturned</models:OutwardOrderStatus>
                         <models:OutwardOrderStatus>FullyReturned</models:OutwardOrderStatus>
+                        <models:OutwardOrderStatus>Closed</models:OutwardOrderStatus>
                     </ComboBox.Items>
                 </ComboBox>
                 <TextBlock Text="From:" VerticalAlignment="Center" Margin="12,0,6,0" Foreground="{StaticResource TextSecondary}"/>
@@ -42,10 +43,11 @@
                 <TextBlock Text="To:" VerticalAlignment="Center" Margin="8,0,6,0" Foreground="{StaticResource TextSecondary}"/>
                 <DatePicker SelectedDate="{Binding FilterDateTo, UpdateSourceTrigger=PropertyChanged}"
                             Width="120" FontFamily="Segoe UI" FontSize="13" VerticalAlignment="Center"/>
-                <Button Content="Edit" Command="{Binding EditCommand}" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0"/>
-                <Button Content="Process Return" Command="{Binding ReturnCommand}" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0"/>
-                <Button Content="Edit History" Command="{Binding ViewHistoryCommand}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"/>
-                <Button Content="Clear" Command="{Binding ClearFilterCommand}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"/>
+                <Button Content="Edit" Command="{Binding EditCommand}" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                <Button Content="Process Return" Command="{Binding ReturnCommand}" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                <Button Content="Close Order" Command="{Binding CloseOrderCommand}" Style="{StaticResource DangerButton}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                <Button Content="Edit History" Command="{Binding ViewHistoryCommand}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                <Button Content="Clear" Command="{Binding ClearFilterCommand}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0" VerticalAlignment="Center"/>
             </WrapPanel>
         </Border>
 
@@ -57,9 +59,10 @@
                       Style="{StaticResource AppDataGrid}">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Outward No." Binding="{Binding OutwardNumber}" Width="130"/>
-                    <DataGridTextColumn Header="Recipient" Binding="{Binding Recipient}" Width="140"/>
-                    <DataGridTextColumn Header="Purpose" Binding="{Binding Purpose}" Width="140"/>
-                    <DataGridTemplateColumn Header="Status" Width="130" SortMemberPath="Status">
+                    <DataGridTextColumn Header="Recipient" Binding="{Binding Recipient}" Width="130"/>
+                    <DataGridTextColumn Header="Style" Binding="{Binding Style}" Width="100"/>
+                    <DataGridTextColumn Header="Purpose" Binding="{Binding Purpose}" Width="120"/>
+                    <DataGridTemplateColumn Header="Status" Width="140" SortMemberPath="Status">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Border CornerRadius="10" Padding="8,3" HorizontalAlignment="Left"
@@ -69,7 +72,7 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="Items" Binding="{Binding Items.Count}" Width="60"/>
+                    <DataGridTextColumn Header="Items" Binding="{Binding Items.Count}" Width="55"/>
                     <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="*"/>
                     <DataGridTextColumn Header="Date" Binding="{Binding OutwardDate, StringFormat='dd-MM-yyyy'}" Width="100"/>
                     <DataGridTemplateColumn Header="" Width="46">

@@ -26,6 +26,7 @@ public class OutwardOrderViewModel : BaseViewModel, IRefreshable
     public RelayCommand AddCommand { get; }
     public RelayCommand EditCommand { get; }
     public RelayCommand ReturnCommand { get; }
+    public RelayCommand CloseOrderCommand { get; }
     public RelayCommand RefreshCommand { get; }
     public RelayCommand ViewHistoryCommand { get; }
     public RelayCommand ClearFilterCommand { get; }
@@ -33,8 +34,11 @@ public class OutwardOrderViewModel : BaseViewModel, IRefreshable
     public OutwardOrderViewModel()
     {
         AddCommand = new RelayCommand(_ => OpenAdd());
-        EditCommand = new RelayCommand(_ => OpenEdit(), _ => Selected != null);
-        ReturnCommand = new RelayCommand(_ => OpenReturn(), _ => Selected != null && Selected.Status != OutwardOrderStatus.FullyReturned);
+        EditCommand = new RelayCommand(_ => OpenEdit(), _ => Selected != null && Selected.Status != OutwardOrderStatus.Closed);
+        ReturnCommand = new RelayCommand(_ => OpenReturn(), _ => Selected != null &&
+            Selected.Status != OutwardOrderStatus.FullyReturned &&
+            Selected.Status != OutwardOrderStatus.Closed);
+        CloseOrderCommand = new RelayCommand(_ => OpenClose(), _ => Selected != null && Selected.Status != OutwardOrderStatus.Closed);
         RefreshCommand = new RelayCommand(_ => Refresh());
         ViewHistoryCommand = new RelayCommand(_ => ViewHistory(), _ => Selected != null);
         ClearFilterCommand = new RelayCommand(_ => { FilterStatus = null; SearchText = string.Empty; FilterDateFrom = null; FilterDateTo = null; });
@@ -53,7 +57,9 @@ public class OutwardOrderViewModel : BaseViewModel, IRefreshable
         var q = SearchText.ToLower();
         var result = _orders.Where(o =>
             (string.IsNullOrWhiteSpace(q) || o.OutwardNumber.ToLower().Contains(q) ||
-             o.Recipient.ToLower().Contains(q) || o.Purpose.ToLower().Contains(q)) &&
+             o.Recipient.ToLower().Contains(q) || o.Purpose.ToLower().Contains(q) ||
+             o.Style.ToLower().Contains(q) ||
+             o.Items.Any(i => DataService.Instance.GetAccessoryName(i.AccessoryId).ToLower().Contains(q))) &&
             (FilterStatus == null || o.Status == FilterStatus) &&
             (FilterDateFrom == null || o.OutwardDate.Date >= FilterDateFrom.Value.Date) &&
             (FilterDateTo == null || o.OutwardDate.Date <= FilterDateTo.Value.Date));
@@ -79,6 +85,13 @@ public class OutwardOrderViewModel : BaseViewModel, IRefreshable
     {
         if (Selected == null) return;
         var dlg = new TAM.Dialogs.ReturnOrderDialog(Selected);
+        if (dlg.ShowDialog() == true) Refresh();
+    }
+
+    private void OpenClose()
+    {
+        if (Selected == null) return;
+        var dlg = new TAM.Dialogs.CloseOutwardDialog(Selected);
         if (dlg.ShowDialog() == true) Refresh();
     }
 

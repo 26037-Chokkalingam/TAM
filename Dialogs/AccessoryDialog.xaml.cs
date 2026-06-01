@@ -13,6 +13,8 @@ public partial class AccessoryDialog : Window
     {
         InitializeComponent();
         _existing = accessory;
+        LoadCategories();
+
         if (accessory != null)
         {
             TitleText.Text = "Edit Accessory";
@@ -28,6 +30,23 @@ public partial class AccessoryDialog : Window
         {
             UnitBox.Text = "pcs";
         }
+    }
+
+    private void LoadCategories()
+    {
+        var categories = DataService.Instance.GetCategories().Select(c => c.Name).ToList();
+        CategoryBox.ItemsSource = categories;
+    }
+
+    private void CategoryFilter_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is not ComboBox cb) return;
+        var all = DataService.Instance.GetCategories().Select(c => c.Name).ToList();
+        if (cb.SelectedItem is string sel && sel == cb.Text) { cb.ItemsSource = all; return; }
+        cb.ItemsSource = string.IsNullOrWhiteSpace(cb.Text)
+            ? all
+            : all.Where(n => n.Contains(cb.Text, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (!cb.IsDropDownOpen && !string.IsNullOrEmpty(cb.Text)) cb.IsDropDownOpen = true;
     }
 
     private void SaveBtn_Click(object sender, RoutedEventArgs e)
@@ -54,12 +73,14 @@ public partial class AccessoryDialog : Window
             return;
         }
 
+        var category = CategoryBox.Text?.Trim() ?? string.Empty;
+
         if (_existing == null)
         {
             var a = new Accessory
             {
                 Name = name,
-                Category = CategoryBox.Text.Trim(),
+                Category = category,
                 Unit = UnitBox.Text.Trim(),
                 CurrentStock = stock,
                 MinimumStock = minStock,
@@ -71,7 +92,7 @@ public partial class AccessoryDialog : Window
         else
         {
             _existing.Name = name;
-            _existing.Category = CategoryBox.Text.Trim();
+            _existing.Category = category;
             _existing.Unit = UnitBox.Text.Trim();
             _existing.CurrentStock = stock;
             _existing.MinimumStock = minStock;
