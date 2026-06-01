@@ -11,7 +11,6 @@ public class POItemRow : System.ComponentModel.INotifyPropertyChanged
     private string _accessoryId = string.Empty;
     public string AccessoryId { get => _accessoryId; set { _accessoryId = value; OnPC(nameof(AccessoryId)); OnPC(nameof(AccessoryName)); OnPC(nameof(AccessoryUnit)); } }
     public decimal Quantity { get; set; }
-    public decimal UnitPrice { get; set; }
     public string AccessoryName => DataService.Instance.GetAccessoryName(AccessoryId);
     public string AccessoryUnit => DataService.Instance.GetAccessoryById(AccessoryId)?.Unit ?? string.Empty;
     public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
@@ -38,9 +37,37 @@ public partial class PurchaseOrderDialog : Window
             VendorCombo.SelectedValue = po.VendorId;
             NotesBox.Text = po.Notes;
             foreach (var item in po.Items)
-                ItemRows.Add(new POItemRow { AccessoryId = item.AccessoryId, Quantity = item.RequestedQuantity, UnitPrice = item.UnitPrice });
+                ItemRows.Add(new POItemRow { AccessoryId = item.AccessoryId, Quantity = item.RequestedQuantity });
         }
         ItemsGrid.ItemsSource = ItemRows;
+    }
+
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        try { ItemsGrid.CancelEdit(DataGridEditingUnit.Row); } catch { }
+        base.OnClosing(e);
+    }
+
+    private void VendorFilter_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is not ComboBox cb) return;
+        var all = DataService.Instance.GetVendors().Where(v => v.IsActive).ToList();
+        if (cb.SelectedItem is Vendor sel && sel.Name == cb.Text) { cb.ItemsSource = all; return; }
+        cb.ItemsSource = string.IsNullOrWhiteSpace(cb.Text)
+            ? all
+            : all.Where(v => v.Name.Contains(cb.Text, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (!cb.IsDropDownOpen && !string.IsNullOrEmpty(cb.Text)) cb.IsDropDownOpen = true;
+    }
+
+    private void AccessoryFilter_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is not ComboBox cb) return;
+        var all = DataService.Instance.GetAccessories().Where(a => a.IsActive).ToList();
+        if (cb.SelectedItem is Accessory sel && sel.Name == cb.Text) { cb.ItemsSource = all; return; }
+        cb.ItemsSource = string.IsNullOrWhiteSpace(cb.Text)
+            ? all
+            : all.Where(a => a.Name.Contains(cb.Text, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (!cb.IsDropDownOpen && !string.IsNullOrEmpty(cb.Text)) cb.IsDropDownOpen = true;
     }
 
     private void AddItem_Click(object sender, RoutedEventArgs e)
@@ -95,8 +122,7 @@ public partial class PurchaseOrderDialog : Window
                 Items = ItemRows.Select(r => new PurchaseOrderItem
                 {
                     AccessoryId = r.AccessoryId,
-                    RequestedQuantity = r.Quantity,
-                    UnitPrice = r.UnitPrice
+                    RequestedQuantity = r.Quantity
                 }).ToList()
             };
             DataService.Instance.AddPurchaseOrder(po);
@@ -108,8 +134,7 @@ public partial class PurchaseOrderDialog : Window
             _existing.Items = ItemRows.Select(r => new PurchaseOrderItem
             {
                 AccessoryId = r.AccessoryId,
-                RequestedQuantity = r.Quantity,
-                UnitPrice = r.UnitPrice
+                RequestedQuantity = r.Quantity
             }).ToList();
             DataService.Instance.UpdatePurchaseOrder(_existing, "Edited purchase order");
         }

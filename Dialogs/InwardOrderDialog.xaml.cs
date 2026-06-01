@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+using Newtonsoft.Json;
 using TAM.Models;
 using TAM.Services;
 
@@ -12,7 +13,6 @@ public class InwardItemRow : System.ComponentModel.INotifyPropertyChanged
     public string AccessoryId { get => _accessoryId; set { _accessoryId = value; OnPC(nameof(AccessoryId)); OnPC(nameof(AccessoryName)); } }
     public string? POItemId { get; set; }
     public decimal Quantity { get; set; }
-    public decimal UnitPrice { get; set; }
     public decimal RequestedQty { get; set; }
     public string AccessoryName => DataService.Instance.GetAccessoryName(AccessoryId);
     public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
@@ -45,7 +45,7 @@ public partial class InwardOrderDialog : Window
             InwardDatePicker.SelectedDate = inward.InwardDate;
             NotesBox.Text = inward.Notes;
             foreach (var item in inward.Items)
-                ItemRows.Add(new InwardItemRow { AccessoryId = item.AccessoryId, Quantity = item.Quantity, UnitPrice = item.UnitPrice });
+                ItemRows.Add(new InwardItemRow { AccessoryId = item.AccessoryId, Quantity = item.Quantity });
         }
         else
         {
@@ -76,11 +76,45 @@ public partial class InwardOrderDialog : Window
                 AccessoryId = item.AccessoryId,
                 POItemId = item.ItemId,
                 RequestedQty = item.RequestedQuantity - item.ReceivedQuantity,
-                Quantity = item.RequestedQuantity - item.ReceivedQuantity,
-                UnitPrice = item.UnitPrice
+                Quantity = item.RequestedQuantity - item.ReceivedQuantity
             });
         }
         ItemsGrid.ItemsSource = ItemRows;
+    }
+
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        try { ItemsGrid.CancelEdit(DataGridEditingUnit.Row); } catch { }
+        base.OnClosing(e);
+    }
+
+    private void VendorFilter_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        if (sender is not ComboBox cb) return;
+        var all = DataService.Instance.GetVendors().Where(v => v.IsActive).ToList();
+        if (cb.SelectedItem is Vendor sel && sel.Name == cb.Text) { cb.ItemsSource = all; return; }
+        cb.ItemsSource = string.IsNullOrWhiteSpace(cb.Text)
+            ? all
+            : all.Where(v => v.Name.Contains(cb.Text, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (!cb.IsDropDownOpen && !string.IsNullOrEmpty(cb.Text)) cb.IsDropDownOpen = true;
+    }
+
+    private void AccessoryFilter_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        if (sender is not ComboBox cb) return;
+        var all = DataService.Instance.GetAccessories().Where(a => a.IsActive).ToList();
+        if (cb.SelectedItem is Accessory sel && sel.Name == cb.Text) { cb.ItemsSource = all; return; }
+        cb.ItemsSource = string.IsNullOrWhiteSpace(cb.Text)
+            ? all
+            : all.Where(a => a.Name.Contains(cb.Text, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (!cb.IsDropDownOpen && !string.IsNullOrEmpty(cb.Text)) cb.IsDropDownOpen = true;
+    }
+
+    private void AccessoryCombo_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (sender is ComboBox cb && cb.SelectedValue is string id &&
+            ItemsGrid.SelectedItem is InwardItemRow row)
+            row.AccessoryId = id;
     }
 
     private void AddItem_Click(object sender, RoutedEventArgs e)
@@ -124,17 +158,18 @@ public partial class InwardOrderDialog : Window
         }
         else if (_existing != null)
         {
-            _existing.VendorId = vendorId;
-            _existing.BillNo = BillNoBox.Text.Trim();
-            _existing.InwardDate = InwardDatePicker.SelectedDate ?? DateTime.Today;
-            _existing.Notes = NotesBox.Text.Trim();
-            _existing.Items = ItemRows.Where(r => r.Quantity > 0).Select(r => new InwardOrderItem
+            var updatedInward = JsonConvert.DeserializeObject<InwardOrder>(
+                JsonConvert.SerializeObject(_existing))!;
+            updatedInward.VendorId = vendorId;
+            updatedInward.BillNo = BillNoBox.Text.Trim();
+            updatedInward.InwardDate = InwardDatePicker.SelectedDate ?? DateTime.Today;
+            updatedInward.Notes = NotesBox.Text.Trim();
+            updatedInward.Items = ItemRows.Where(r => r.Quantity > 0).Select(r => new InwardOrderItem
             {
                 AccessoryId = r.AccessoryId,
-                Quantity = r.Quantity,
-                UnitPrice = r.UnitPrice
+                Quantity = r.Quantity
             }).ToList();
-            DataService.Instance.UpdateInwardOrder(_existing, "Edited inward order");
+            DataService.Instance.UpdateInwardOrder(updatedInward, "Edited inward order");
         }
         else
         {
@@ -147,8 +182,7 @@ public partial class InwardOrderDialog : Window
                 Items = ItemRows.Where(r => r.Quantity > 0).Select(r => new InwardOrderItem
                 {
                     AccessoryId = r.AccessoryId,
-                    Quantity = r.Quantity,
-                    UnitPrice = r.UnitPrice
+                    Quantity = r.Quantity
                 }).ToList()
             };
             DataService.Instance.AddInwardOrder(inward);

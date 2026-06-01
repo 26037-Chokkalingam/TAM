@@ -16,8 +16,9 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Padding" Value="20,11"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -25,18 +26,17 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="bd" Background="{TemplateBinding Background}"
-                                BorderThickness="3,0,0,0" BorderBrush="Transparent">
+                                BorderThickness="3,0,0,0" BorderBrush="{TemplateBinding BorderBrush}">
                             <ContentPresenter Margin="{TemplateBinding Padding}"
                                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                               VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="#880E4F"/>
-                                <Setter TargetName="bd" Property="BorderBrush" Value="#E91E63"/>
+                                <Setter TargetName="bd" Property="Background" Value="#7B0D3F"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="#880E4F"/>
+                                <Setter TargetName="bd" Property="Background" Value="#6A0B36"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -55,57 +55,185 @@
         <Border Grid.Column="0" Background="#AD1457">
             <DockPanel>
                 <!-- App Title -->
-                <Border DockPanel.Dock="Top" Padding="20,24,20,20" BorderBrush="#880E4F" BorderThickness="0,0,0,1">
+                <Border DockPanel.Dock="Top" Padding="20,22,20,18" BorderBrush="#880E4F" BorderThickness="0,0,0,1">
                     <StackPanel>
-                        <TextBlock Text="TAM" FontSize="28" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock Text="TrackFun Accessories" FontSize="11" Foreground="#F8BBD0" Margin="0,2,0,0"/>
-                        <TextBlock Text="Management" FontSize="11" Foreground="#F8BBD0"/>
+                        <TextBlock Text="TAM" FontSize="26" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="TrackFun Accessories Mgmt" FontSize="10.5" Foreground="#F8BBD0" Margin="0,3,0,0"/>
                     </StackPanel>
                 </Border>
 
-                <!-- Footer (docked to bottom first so it stays at bottom) -->
-                <Border DockPanel.Dock="Bottom" Padding="16,12" BorderBrush="#880E4F" BorderThickness="0,1,0,0">
+                <!-- Footer -->
+                <Border DockPanel.Dock="Bottom" Padding="16,10" BorderBrush="#880E4F" BorderThickness="0,1,0,0">
                     <TextBlock Text="v1.0.0" FontSize="11" Foreground="#F8BBD0" HorizontalAlignment="Center"/>
                 </Border>
 
                 <!-- Nav Items -->
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Margin="0,12,0,0">
-                        <Button Content="  Dashboard" Tag="Dashboard" Click="NavButton_Click"
-                                Style="{StaticResource NavButton}"/>
-                        <Button Content="  Vendors" Tag="Vendors" Click="NavButton_Click"
-                                Style="{StaticResource NavButton}"/>
-                        <Button Content="  Accessories" Tag="Accessories" Click="NavButton_Click"
-                                Style="{StaticResource NavButton}"/>
+                    <StackPanel Margin="0,10,0,0">
 
-                        <Border Margin="16,8" BorderBrush="#880E4F" BorderThickness="0,0,0,1" Opacity="0.5"/>
-                        <TextBlock Text="ORDERS" FontSize="10" Foreground="#F8BBD0" Margin="16,4,0,4" FontWeight="SemiBold"/>
+                        <Button Tag="Dashboard" Click="NavButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ActiveNav}" Value="Dashboard">
+                                            <Setter Property="Background" Value="#880E4F"/>
+                                            <Setter Property="BorderBrush" Value="#F06292"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            Dashboard
+                        </Button>
 
-                        <Button Content="  Purchase Orders" Tag="PurchaseOrders" Click="NavButton_Click"
-                                Style="{StaticResource NavButton}"/>
-                        <Button Content="  Inward Orders" Tag="InwardOrders" Click="NavButton_Click"
-                                Style="{StaticResource NavButton}"/>
-                        <Button Content="  Outward Orders" Tag="OutwardOrders" Click="NavButton_Click"
-                                Style="{StaticResource NavButton}"/>
-                        <Button Content="  Return Orders" Tag="ReturnOrders" Click="NavButton_Click"
-                                Style="{StaticResource NavButton}"/>
+                        <Button Tag="Vendors" Click="NavButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ActiveNav}" Value="Vendors">
+                                            <Setter Property="Background" Value="#880E4F"/>
+                                            <Setter Property="BorderBrush" Value="#F06292"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            Vendors
+                        </Button>
 
-                        <Border Margin="16,8" BorderBrush="#880E4F" BorderThickness="0,0,0,1" Opacity="0.5"/>
-                        <TextBlock Text="REPORTS" FontSize="10" Foreground="#F8BBD0" Margin="16,4,0,4" FontWeight="SemiBold"/>
+                        <Button Tag="Accessories" Click="NavButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ActiveNav}" Value="Accessories">
+                                            <Setter Property="Background" Value="#880E4F"/>
+                                            <Setter Property="BorderBrush" Value="#F06292"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            Accessories
+                        </Button>
 
-                        <Button Content="  Summary" Tag="Summary" Click="NavButton_Click"
-                                Style="{StaticResource NavButton}"/>
-                        <Button Content="  Audit Log" Tag="AuditLog" Click="NavButton_Click"
-                                Style="{StaticResource NavButton}"/>
-                        <Button Content="  Backup &amp; Restore" Tag="Backup" Click="NavButton_Click"
-                                Style="{StaticResource NavButton}"/>
+                        <Border Margin="16,8" BorderBrush="#880E4F" BorderThickness="0,0,0,1" Opacity="0.4"/>
+                        <TextBlock Text="ORDERS" FontSize="10" Foreground="#F8BBD0" Margin="20,4,0,4" FontWeight="SemiBold"/>
+
+                        <Button Tag="PurchaseOrders" Click="NavButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ActiveNav}" Value="PurchaseOrders">
+                                            <Setter Property="Background" Value="#880E4F"/>
+                                            <Setter Property="BorderBrush" Value="#F06292"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            Purchase Orders
+                        </Button>
+
+                        <Button Tag="InwardOrders" Click="NavButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ActiveNav}" Value="InwardOrders">
+                                            <Setter Property="Background" Value="#880E4F"/>
+                                            <Setter Property="BorderBrush" Value="#F06292"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            Inward Orders
+                        </Button>
+
+                        <Button Tag="OutwardOrders" Click="NavButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ActiveNav}" Value="OutwardOrders">
+                                            <Setter Property="Background" Value="#880E4F"/>
+                                            <Setter Property="BorderBrush" Value="#F06292"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            Outward Orders
+                        </Button>
+
+                        <Button Tag="ReturnOrders" Click="NavButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ActiveNav}" Value="ReturnOrders">
+                                            <Setter Property="Background" Value="#880E4F"/>
+                                            <Setter Property="BorderBrush" Value="#F06292"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            Return Orders
+                        </Button>
+
+                        <Border Margin="16,8" BorderBrush="#880E4F" BorderThickness="0,0,0,1" Opacity="0.4"/>
+                        <TextBlock Text="REPORTS" FontSize="10" Foreground="#F8BBD0" Margin="20,4,0,4" FontWeight="SemiBold"/>
+
+                        <Button Tag="Summary" Click="NavButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ActiveNav}" Value="Summary">
+                                            <Setter Property="Background" Value="#880E4F"/>
+                                            <Setter Property="BorderBrush" Value="#F06292"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            Summary
+                        </Button>
+
+                        <Button Tag="AuditLog" Click="NavButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ActiveNav}" Value="AuditLog">
+                                            <Setter Property="Background" Value="#880E4F"/>
+                                            <Setter Property="BorderBrush" Value="#F06292"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            Audit Log
+                        </Button>
+
+                        <Button Tag="Backup" Click="NavButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ActiveNav}" Value="Backup">
+                                            <Setter Property="Background" Value="#880E4F"/>
+                                            <Setter Property="BorderBrush" Value="#F06292"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            Backup &amp; Restore
+                        </Button>
+
                     </StackPanel>
                 </ScrollViewer>
             </DockPanel>
         </Border>
 
         <!-- CONTENT AREA -->
-        <Grid Grid.Column="1" Background="#F5F5F5">
+        <Grid Grid.Column="1" Background="#F4F6F9">
             <ContentControl Content="{Binding CurrentViewModel}" Margin="0"/>
         </Grid>
     </Grid>

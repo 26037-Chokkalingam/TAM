@@ -12,12 +12,16 @@ public class OutwardOrderViewModel : BaseViewModel, IRefreshable
     private ObservableCollection<OutwardOrder> _filtered = new();
     private string _searchText = string.Empty;
     private OutwardOrderStatus? _filterStatus;
+    private DateTime? _filterDateFrom;
+    private DateTime? _filterDateTo;
     private OutwardOrder? _selected;
 
     public ObservableCollection<OutwardOrder> Orders { get => _filtered; set => SetProperty(ref _filtered, value); }
     public OutwardOrder? Selected { get => _selected; set => SetProperty(ref _selected, value); }
     public string SearchText { get => _searchText; set { SetProperty(ref _searchText, value); ApplyFilter(); } }
     public OutwardOrderStatus? FilterStatus { get => _filterStatus; set { SetProperty(ref _filterStatus, value); ApplyFilter(); } }
+    public DateTime? FilterDateFrom { get => _filterDateFrom; set { SetProperty(ref _filterDateFrom, value); ApplyFilter(); } }
+    public DateTime? FilterDateTo { get => _filterDateTo; set { SetProperty(ref _filterDateTo, value); ApplyFilter(); } }
 
     public RelayCommand AddCommand { get; }
     public RelayCommand EditCommand { get; }
@@ -33,7 +37,7 @@ public class OutwardOrderViewModel : BaseViewModel, IRefreshable
         ReturnCommand = new RelayCommand(_ => OpenReturn(), _ => Selected != null && Selected.Status != OutwardOrderStatus.FullyReturned);
         RefreshCommand = new RelayCommand(_ => Refresh());
         ViewHistoryCommand = new RelayCommand(_ => ViewHistory(), _ => Selected != null);
-        ClearFilterCommand = new RelayCommand(_ => { FilterStatus = null; SearchText = string.Empty; });
+        ClearFilterCommand = new RelayCommand(_ => { FilterStatus = null; SearchText = string.Empty; FilterDateFrom = null; FilterDateTo = null; });
         Refresh();
     }
 
@@ -50,7 +54,9 @@ public class OutwardOrderViewModel : BaseViewModel, IRefreshable
         var result = _orders.Where(o =>
             (string.IsNullOrWhiteSpace(q) || o.OutwardNumber.ToLower().Contains(q) ||
              o.Recipient.ToLower().Contains(q) || o.Purpose.ToLower().Contains(q)) &&
-            (FilterStatus == null || o.Status == FilterStatus));
+            (FilterStatus == null || o.Status == FilterStatus) &&
+            (FilterDateFrom == null || o.OutwardDate.Date >= FilterDateFrom.Value.Date) &&
+            (FilterDateTo == null || o.OutwardDate.Date <= FilterDateTo.Value.Date));
         Orders = new ObservableCollection<OutwardOrder>(result);
     }
 

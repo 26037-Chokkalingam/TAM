@@ -5,7 +5,6 @@ public class InwardOrderItem
     public string ItemId { get; set; } = Guid.NewGuid().ToString();
     public string AccessoryId { get; set; } = string.Empty;
     public decimal Quantity { get; set; }
-    public decimal UnitPrice { get; set; }
 }
 
 public class InwardOrder

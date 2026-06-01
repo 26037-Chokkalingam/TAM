@@ -30,7 +30,9 @@
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Vendor *" Style="{StaticResource SectionLabel}"/>
                         <ComboBox x:Name="VendorCombo" Style="{StaticResource FormComboBox}"
-                                  DisplayMemberPath="Name" SelectedValuePath="VendorId"/>
+                                  DisplayMemberPath="Name" SelectedValuePath="VendorId"
+                                  IsEditable="True" IsTextSearchEnabled="False" StaysOpenOnEdit="True"
+                                  TextBoxBase.TextChanged="VendorFilter_TextChanged"/>
                     </StackPanel>
                 </Grid>
 
@@ -66,13 +68,14 @@
                                         <ComboBox ItemsSource="{Binding DataContext.Accessories, RelativeSource={RelativeSource AncestorType=Window}}"
                                                   DisplayMemberPath="Name" SelectedValuePath="AccessoryId"
                                                   SelectedValue="{Binding AccessoryId, UpdateSourceTrigger=PropertyChanged}"
-                                                  SelectionChanged="AccessoryCombo_Changed"/>
+                                                  SelectionChanged="AccessoryCombo_Changed"
+                                                  IsEditable="True" IsTextSearchEnabled="False" StaysOpenOnEdit="True"
+                                                  TextBoxBase.TextChanged="AccessoryFilter_TextChanged"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn Header="Unit" Binding="{Binding AccessoryUnit}" Width="60" IsReadOnly="True"/>
                             <DataGridTextColumn Header="Quantity *" Binding="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
-                            <DataGridTextColumn Header="Unit Price" Binding="{Binding UnitPrice, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
                             <DataGridTemplateColumn Header="" Width="60">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>

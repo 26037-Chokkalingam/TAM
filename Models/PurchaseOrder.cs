@@ -8,7 +8,6 @@ public class PurchaseOrderItem
     public string AccessoryId { get; set; } = string.Empty;
     public decimal RequestedQuantity { get; set; }
     public decimal ReceivedQuantity { get; set; }
-    public decimal UnitPrice { get; set; }
 }
 
 public class PurchaseOrder

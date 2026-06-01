@@ -169,11 +169,13 @@ public class DataService
     {
         var idx = _inwardOrders.FindIndex(x => x.InwardId == updated.InwardId);
         if (idx < 0) return;
-        var old = _inwardOrders[idx];
-        // Reverse old stock, apply new stock
-        ApplyInwardStock(old.Items, -1);
+        // Deep-copy old state immediately — dialog may have already mutated the in-memory object
+        var oldJson = JsonConvert.SerializeObject(_inwardOrders[idx]);
+        var oldState = JsonConvert.DeserializeObject<InwardOrder>(oldJson)!;
+        // Reverse old stock, apply new stock using the captured old state
+        ApplyInwardStock(oldState.Items, -1);
         ApplyInwardStock(updated.Items, +1);
-        updated.EditHistory.Insert(0, Snapshot(old, changeDesc));
+        updated.EditHistory.Insert(0, new EditHistoryEntry { ChangeDescription = changeDesc, SnapshotJson = oldJson, ChangedAt = DateTime.Now });
         _inwardOrders[idx] = updated;
         Save("inward_orders.json", _inwardOrders);
         Save("accessories.json", _accessories);
@@ -196,7 +198,7 @@ public class DataService
         {
             if (received.TryGetValue(item.ItemId, out var qty) && qty > 0)
             {
-                inward.Items.Add(new InwardOrderItem { AccessoryId = item.AccessoryId, Quantity = qty, UnitPrice = item.UnitPrice });
+                inward.Items.Add(new InwardOrderItem { AccessoryId = item.AccessoryId, Quantity = qty });
                 item.ReceivedQuantity += qty;
             }
         }
@@ -213,8 +215,7 @@ public class DataService
                 Items = remaining.Select(r => new PurchaseOrderItem
                 {
                     AccessoryId = r.AccessoryId,
-                    RequestedQuantity = r.RequestedQuantity - r.ReceivedQuantity,
-                    UnitPrice = r.UnitPrice
+                    RequestedQuantity = r.RequestedQuantity - r.ReceivedQuantity
                 }).ToList()
             };
             AddPurchaseOrder(newPO);
@@ -264,32 +265,36 @@ public class DataService
         error = string.Empty;
         var idx = _outwardOrders.FindIndex(x => x.OutwardId == updated.OutwardId);
         if (idx < 0) { error = "Order not found."; return false; }
-        var old = _outwardOrders[idx];
+        // Deep-copy old state immediately — dialog may have already mutated the in-memory object
+        var oldJson = JsonConvert.SerializeObject(_outwardOrders[idx]);
+        var oldState = JsonConvert.DeserializeObject<OutwardOrder>(oldJson)!;
 
-        // Reverse old impact, check new, apply new
-        foreach (var item in old.Items)
+        // Reverse old net stock impact (qty dispatched minus what was already returned)
+        foreach (var item in oldState.Items)
         {
             var acc = _accessories.FirstOrDefault(a => a.AccessoryId == item.AccessoryId);
             if (acc != null) acc.CurrentStock += item.Quantity - item.ReturnedQuantity;
         }
+        // Validate new items against restored stock
         foreach (var item in updated.Items)
         {
             var acc = _accessories.FirstOrDefault(a => a.AccessoryId == item.AccessoryId);
-            if (acc == null) { RestockOldOutward(old); error = "Accessory not found."; return false; }
+            if (acc == null) { RevertOutwardRestore(oldState); error = "Accessory not found."; return false; }
             if (acc.CurrentStock < item.Quantity)
             {
-                RestockOldOutward(old);
-                error = $"Insufficient stock for '{acc.Name}'.";
+                RevertOutwardRestore(oldState);
+                error = $"Insufficient stock for '{acc.Name}'. Available: {acc.CurrentStock}, Required: {item.Quantity}";
                 return false;
             }
         }
+        // Apply new stock
         foreach (var item in updated.Items)
         {
             var acc = _accessories.First(a => a.AccessoryId == item.AccessoryId);
             acc.CurrentStock -= item.Quantity;
             acc.UpdatedAt = DateTime.Now;
         }
-        updated.EditHistory.Insert(0, Snapshot(old, changeDesc));
+        updated.EditHistory.Insert(0, new EditHistoryEntry { ChangeDescription = changeDesc, SnapshotJson = oldJson, ChangedAt = DateTime.Now });
         _outwardOrders[idx] = updated;
         Save("outward_orders.json", _outwardOrders);
         Save("accessories.json", _accessories);
@@ -297,9 +302,9 @@ public class DataService
         return true;
     }
 
-    private void RestockOldOutward(OutwardOrder old)
+    private void RevertOutwardRestore(OutwardOrder oldState)
     {
-        foreach (var item in old.Items)
+        foreach (var item in oldState.Items)
         {
             var acc = _accessories.FirstOrDefault(a => a.AccessoryId == item.AccessoryId);
             if (acc != null) acc.CurrentStock -= item.Quantity - item.ReturnedQuantity;
@@ -356,10 +361,12 @@ public class DataService
     {
         var idx = _returnOrders.FindIndex(x => x.ReturnId == updated.ReturnId);
         if (idx < 0) return;
-        var old = _returnOrders[idx];
+        // Deep-copy old state immediately — dialog may have already mutated the in-memory object
+        var oldJson = JsonConvert.SerializeObject(_returnOrders[idx]);
+        var oldState = JsonConvert.DeserializeObject<ReturnOrder>(oldJson)!;
 
-        // Reverse old return stock, apply new
-        foreach (var item in old.Items)
+        // Reverse old return stock using captured old state, apply new
+        foreach (var item in oldState.Items)
         {
             var acc = _accessories.FirstOrDefault(a => a.AccessoryId == item.AccessoryId);
             if (acc != null) { acc.CurrentStock -= item.ReturnedQuantity; acc.UpdatedAt = DateTime.Now; }
@@ -395,7 +402,7 @@ public class DataService
             if (oidx >= 0) _outwardOrders[oidx] = outward;
         }
 
-        updated.EditHistory.Insert(0, Snapshot(old, changeDesc));
+        updated.EditHistory.Insert(0, new EditHistoryEntry { ChangeDescription = changeDesc, SnapshotJson = oldJson, ChangedAt = DateTime.Now });
         _returnOrders[idx] = updated;
         Save("return_orders.json", _returnOrders);
         Save("outward_orders.json", _outwardOrders);

@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Controls;
+using Newtonsoft.Json;
 using TAM.Models;
 using TAM.Services;
 
@@ -22,7 +24,6 @@ public partial class ReturnOrderDialog : Window
     private ReturnOrder? _existingReturn;
     public ObservableCollection<ReturnItemRow> ItemRows { get; } = new();
 
-    // Create new return from outward
     public ReturnOrderDialog(OutwardOrder outward)
     {
         InitializeComponent();
@@ -46,7 +47,6 @@ public partial class ReturnOrderDialog : Window
         ItemsGrid.ItemsSource = ItemRows;
     }
 
-    // Edit existing return
     public ReturnOrderDialog(ReturnOrder ret)
     {
         InitializeComponent();
@@ -77,65 +77,81 @@ public partial class ReturnOrderDialog : Window
         ItemsGrid.ItemsSource = ItemRows;
     }
 
-    private void ReturnType_Changed(object sender, System.Windows.RoutedEventArgs e)
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
     {
-        if (FullReturnRadio.IsChecked == true)
+        try { ItemsGrid.CancelEdit(DataGridEditingUnit.Row); } catch { }
+        base.OnClosing(e);
+    }
+
+    private void ReturnType_Changed(object sender, RoutedEventArgs e)
+    {
+        // Guard: fires during InitializeComponent before ItemsGrid is ready
+        if (ItemsGrid == null || !ItemRows.Any()) return;
+        if (FullReturnRadio?.IsChecked == true)
         {
             foreach (var r in ItemRows) r.ReturnQty = r.MaxReturnable;
             ItemsGrid.Items.Refresh();
         }
     }
 
-    private void SaveBtn_Click(object sender, System.Windows.RoutedEventArgs e)
+    private void SaveBtn_Click(object sender, RoutedEventArgs e)
     {
-        if (!ItemRows.Any(r => r.ReturnQty > 0))
+        try
         {
-            MessageBox.Show("Please enter return quantity for at least one item.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
-        }
-        foreach (var r in ItemRows)
-        {
-            if (r.ReturnQty > r.MaxReturnable && _existingReturn == null)
+            if (!ItemRows.Any(r => r.ReturnQty > 0))
             {
-                MessageBox.Show($"Return quantity for '{r.AccessoryName}' exceeds maximum returnable ({r.MaxReturnable}).", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please enter return quantity for at least one item.", "Validation",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-        }
-
-        if (_outward != null)
-        {
-            bool fullReturn = FullReturnRadio.IsChecked == true;
-            var qtys = ItemRows.Where(r => r.ReturnQty > 0)
-                               .ToDictionary(r => r.OriginalItemId ?? r.AccessoryId, r => r.ReturnQty);
-            // Use ItemId for lookup in DataService
-            var itemIdQtys = new Dictionary<string, decimal>();
-            foreach (var item in _outward.Items)
+            foreach (var r in ItemRows.Where(r => r.ReturnQty > 0))
             {
-                var row = ItemRows.FirstOrDefault(r => r.AccessoryId == item.AccessoryId);
-                if (row != null && row.ReturnQty > 0)
-                    itemIdQtys[item.ItemId] = row.ReturnQty;
+                if (_existingReturn == null && r.ReturnQty > r.MaxReturnable)
+                {
+                    MessageBox.Show($"Return qty for '{r.AccessoryName}' exceeds max returnable ({r.MaxReturnable}).",
+                        "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
             }
-            var result = DataService.Instance.CreateReturn(_outward, itemIdQtys,
-                NotesBox.Text.Trim(), fullReturn);
-            if (result == null)
-            {
-                MessageBox.Show("Could not create return order.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-        }
-        else if (_existingReturn != null)
-        {
-            _existingReturn.ReturnDate = ReturnDatePicker.SelectedDate ?? DateTime.Today;
-            _existingReturn.Notes = NotesBox.Text.Trim();
-            _existingReturn.IsFullReturn = FullReturnRadio.IsChecked == true;
-            _existingReturn.Items = ItemRows.Where(r => r.ReturnQty > 0).Select(r => new ReturnOrderItem
-            {
-                AccessoryId = r.AccessoryId,
-                ReturnedQuantity = r.ReturnQty
-            }).ToList();
-            DataService.Instance.UpdateReturnOrder(_existingReturn, "Edited return order");
-        }
 
-        DialogResult = true;
+            if (_outward != null)
+            {
+                bool fullReturn = FullReturnRadio.IsChecked == true;
+                var itemIdQtys = new Dictionary<string, decimal>();
+                foreach (var item in _outward.Items)
+                {
+                    var row = ItemRows.FirstOrDefault(r => r.AccessoryId == item.AccessoryId);
+                    if (row != null && row.ReturnQty > 0)
+                        itemIdQtys[item.ItemId] = row.ReturnQty;
+                }
+                var result = DataService.Instance.CreateReturn(_outward, itemIdQtys, NotesBox.Text.Trim(), fullReturn);
+                if (result == null)
+                {
+                    MessageBox.Show("No returnable items found.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+            }
+            else if (_existingReturn != null)
+            {
+                var updatedReturn = JsonConvert.DeserializeObject<ReturnOrder>(
+                    JsonConvert.SerializeObject(_existingReturn))!;
+                updatedReturn.ReturnDate = ReturnDatePicker.SelectedDate ?? DateTime.Today;
+                updatedReturn.Notes = NotesBox.Text.Trim();
+                updatedReturn.IsFullReturn = FullReturnRadio.IsChecked == true;
+                updatedReturn.Items = ItemRows.Where(r => r.ReturnQty > 0).Select(r => new ReturnOrderItem
+                {
+                    AccessoryId = r.AccessoryId,
+                    ReturnedQuantity = r.ReturnQty
+                }).ToList();
+                DataService.Instance.UpdateReturnOrder(updatedReturn, "Edited return order");
+            }
+
+            DialogResult = true;
+        }
+        catch (Exception ex)
+        {
+            AuditService.Instance.Log("ERROR", "ReturnOrder", $"Return save failed: {ex.Message}");
+            MessageBox.Show($"Error saving return: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 }

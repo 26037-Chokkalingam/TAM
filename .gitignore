@@ -1,0 +1,12 @@
+.vs/
+obj/
+
+# Ignore all bin files by default
+bin/
+
+# But allow specific output folder
+!bin/Debug/
+!bin/Debug/net8.0-windows/
+!bin/Debug/net8.0-windows/TAM.dll
+!bin/Debug/net8.0-windows/TAM.exe
+!bin/Debug/net8.0-windows/TAM.pdb

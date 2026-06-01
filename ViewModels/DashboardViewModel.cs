@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using TAM.Helpers;
 using TAM.Models;
 using TAM.Services;
 
@@ -6,6 +7,8 @@ namespace TAM.ViewModels;
 
 public class DashboardViewModel : BaseViewModel, IRefreshable
 {
+    private readonly Action<string, string?> _navigate;
+
     private int _totalVendors, _totalAccessories, _totalPOs, _pendingPOs, _totalInward, _totalOutward, _totalReturns, _lowStock;
     private ObservableCollection<InwardOrder> _recentInwards = new();
     private ObservableCollection<OutwardOrder> _recentOutwards = new();
@@ -21,7 +24,29 @@ public class DashboardViewModel : BaseViewModel, IRefreshable
     public ObservableCollection<InwardOrder> RecentInwards { get => _recentInwards; set => SetProperty(ref _recentInwards, value); }
     public ObservableCollection<OutwardOrder> RecentOutwards { get => _recentOutwards; set => SetProperty(ref _recentOutwards, value); }
 
-    public DashboardViewModel() => Refresh();
+    // Navigation tile commands
+    public RelayCommand NavVendorsCommand { get; }
+    public RelayCommand NavAccessoriesCommand { get; }
+    public RelayCommand NavPOCommand { get; }
+    public RelayCommand NavPendingPOCommand { get; }
+    public RelayCommand NavInwardCommand { get; }
+    public RelayCommand NavOutwardCommand { get; }
+    public RelayCommand NavReturnCommand { get; }
+    public RelayCommand NavLowStockCommand { get; }
+
+    public DashboardViewModel(Action<string, string?> navigate)
+    {
+        _navigate = navigate;
+        NavVendorsCommand = new RelayCommand(() => _navigate("Vendors", null));
+        NavAccessoriesCommand = new RelayCommand(() => _navigate("Summary", null));
+        NavPOCommand = new RelayCommand(() => _navigate("PurchaseOrders", null));
+        NavPendingPOCommand = new RelayCommand(() => _navigate("PurchaseOrders", "Pending"));
+        NavInwardCommand = new RelayCommand(() => _navigate("InwardOrders", null));
+        NavOutwardCommand = new RelayCommand(() => _navigate("OutwardOrders", null));
+        NavReturnCommand = new RelayCommand(() => _navigate("ReturnOrders", null));
+        NavLowStockCommand = new RelayCommand(() => _navigate("Summary", "LowStock"));
+        Refresh();
+    }
 
     public void Refresh()
     {
@@ -37,10 +62,4 @@ public class DashboardViewModel : BaseViewModel, IRefreshable
         RecentInwards = new ObservableCollection<InwardOrder>(stats.RecentInwards);
         RecentOutwards = new ObservableCollection<OutwardOrder>(stats.RecentOutwards);
     }
-
-    public string GetVendorName(string id) => DataService.Instance.GetVendorName(id);
-    public string GetAccessoryNames(InwardOrder inw)
-        => string.Join(", ", inw.Items.Select(i => DataService.Instance.GetAccessoryName(i.AccessoryId)));
-    public string GetAccessoryNamesOut(OutwardOrder out1)
-        => string.Join(", ", out1.Items.Select(i => DataService.Instance.GetAccessoryName(i.AccessoryId)));
 }

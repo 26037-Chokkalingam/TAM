@@ -12,12 +12,16 @@ public class PurchaseOrderViewModel : BaseViewModel, IRefreshable
     private ObservableCollection<PurchaseOrder> _filtered = new();
     private string _searchText = string.Empty;
     private POStatus? _filterStatus;
+    private DateTime? _filterDateFrom;
+    private DateTime? _filterDateTo;
     private PurchaseOrder? _selected;
 
     public ObservableCollection<PurchaseOrder> Orders { get => _filtered; set => SetProperty(ref _filtered, value); }
     public PurchaseOrder? Selected { get => _selected; set => SetProperty(ref _selected, value); }
     public string SearchText { get => _searchText; set { SetProperty(ref _searchText, value); ApplyFilter(); } }
     public POStatus? FilterStatus { get => _filterStatus; set { SetProperty(ref _filterStatus, value); ApplyFilter(); } }
+    public DateTime? FilterDateFrom { get => _filterDateFrom; set { SetProperty(ref _filterDateFrom, value); ApplyFilter(); } }
+    public DateTime? FilterDateTo { get => _filterDateTo; set { SetProperty(ref _filterDateTo, value); ApplyFilter(); } }
 
     public RelayCommand AddCommand { get; }
     public RelayCommand EditCommand { get; }
@@ -33,7 +37,7 @@ public class PurchaseOrderViewModel : BaseViewModel, IRefreshable
         ConvertCommand = new RelayCommand(_ => OpenConvert(), _ => Selected != null && (Selected.Status == POStatus.Draft || Selected.Status == POStatus.PartiallyInward));
         DeleteCommand = new RelayCommand(_ => DeleteSelected(), _ => Selected != null && Selected.Status == POStatus.Draft);
         RefreshCommand = new RelayCommand(_ => Refresh());
-        ClearFilterCommand = new RelayCommand(_ => { FilterStatus = null; SearchText = string.Empty; });
+        ClearFilterCommand = new RelayCommand(_ => { FilterStatus = null; SearchText = string.Empty; FilterDateFrom = null; FilterDateTo = null; });
         Refresh();
     }
 
@@ -50,7 +54,9 @@ public class PurchaseOrderViewModel : BaseViewModel, IRefreshable
         var result = _orders.Where(p =>
             (string.IsNullOrWhiteSpace(q) || p.PONumber.ToLower().Contains(q) ||
              DataService.Instance.GetVendorName(p.VendorId).ToLower().Contains(q)) &&
-            (FilterStatus == null || p.Status == FilterStatus));
+            (FilterStatus == null || p.Status == FilterStatus) &&
+            (FilterDateFrom == null || p.CreatedAt.Date >= FilterDateFrom.Value.Date) &&
+            (FilterDateTo == null || p.CreatedAt.Date <= FilterDateTo.Value.Date));
         Orders = new ObservableCollection<PurchaseOrder>(result);
     }
 

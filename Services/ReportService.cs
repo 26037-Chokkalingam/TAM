@@ -60,7 +60,7 @@ public class ReportService
         var orders = DataService.Instance.GetInwardOrders().ToList();
         using var wb = new XLWorkbook();
         var ws = wb.AddWorksheet("Inward Orders");
-        SetExcelHeader(ws, new[] { "Inward No", "Bill No", "Vendor", "Accessory", "Quantity", "Unit Price", "Date" });
+        SetExcelHeader(ws, new[] { "Inward No", "Bill No", "Vendor", "Accessory", "Quantity", "Date" });
         int row = 2;
         foreach (var inw in orders)
         {
@@ -71,8 +71,7 @@ public class ReportService
                 ws.Cell(row, 3).Value = DataService.Instance.GetVendorName(inw.VendorId);
                 ws.Cell(row, 4).Value = DataService.Instance.GetAccessoryName(item.AccessoryId);
                 ws.Cell(row, 5).Value = (double)item.Quantity;
-                ws.Cell(row, 6).Value = (double)item.UnitPrice;
-                ws.Cell(row, 7).Value = inw.InwardDate.ToString("dd-MM-yyyy");
+                ws.Cell(row, 6).Value = inw.InwardDate.ToString("dd-MM-yyyy");
                 row++;
             }
         }

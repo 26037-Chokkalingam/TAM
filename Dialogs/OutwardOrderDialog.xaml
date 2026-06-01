@@ -28,8 +28,11 @@
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Recipient *" Style="{StaticResource SectionLabel}"/>
-                        <TextBox x:Name="RecipientBox" Style="{StaticResource FormTextBox}"/>
+                        <TextBlock Text="Recipient (Vendor) *" Style="{StaticResource SectionLabel}"/>
+                        <ComboBox x:Name="RecipientCombo" Style="{StaticResource FormComboBox}"
+                                  DisplayMemberPath="Name"
+                                  IsEditable="True" IsTextSearchEnabled="False" StaysOpenOnEdit="True"
+                                  TextBoxBase.TextChanged="RecipientFilter_TextChanged"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2">
                         <TextBlock Text="Purpose" Style="{StaticResource SectionLabel}"/>
@@ -44,9 +47,7 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Outward Date" Style="{StaticResource SectionLabel}"/>
-                        <DatePicker x:Name="OutwardDatePicker" FontFamily="Segoe UI" FontSize="13"
-                                    BorderBrush="#E0E0E0"
-                                    xmlns:sys="clr-namespace:System;assembly=mscorlib"/>
+                        <DatePicker x:Name="OutwardDatePicker" FontFamily="Segoe UI" FontSize="13" BorderBrush="#E0E0E0"/>
                     </StackPanel>
                 </Grid>
 
@@ -54,7 +55,6 @@
                 <TextBox x:Name="NotesBox" Style="{StaticResource FormTextBox}" Height="45"
                          AcceptsReturn="True" TextWrapping="Wrap" Margin="0,0,0,16"/>
 
-                <!-- Error message -->
                 <Border x:Name="ErrorPanel" Background="#FFEBEE" CornerRadius="6" Padding="12" Margin="0,0,0,12" Visibility="Collapsed">
                     <TextBlock x:Name="ErrorText" Foreground="#C62828" FontSize="13" TextWrapping="Wrap"/>
                 </Border>
@@ -86,19 +86,21 @@
                                         <ComboBox ItemsSource="{Binding DataContext.Accessories, RelativeSource={RelativeSource AncestorType=Window}}"
                                                   DisplayMemberPath="Name" SelectedValuePath="AccessoryId"
                                                   SelectedValue="{Binding AccessoryId, UpdateSourceTrigger=PropertyChanged}"
-                                                  SelectionChanged="AccessoryCombo_Changed"/>
+                                                  SelectionChanged="AccessoryCombo_Changed"
+                                                  IsEditable="True" IsTextSearchEnabled="False" StaysOpenOnEdit="True"
+                                                  TextBoxBase.TextChanged="AccessoryFilter_TextChanged"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="Available Stock" Binding="{Binding AvailableStock}" Width="110" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Available" Binding="{Binding AvailableStock}" Width="100" IsReadOnly="True"/>
                             <DataGridTextColumn Header="Unit" Binding="{Binding Unit}" Width="60" IsReadOnly="True"/>
                             <DataGridTextColumn Header="Quantity *" Binding="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
                             <DataGridTemplateColumn Header="" Width="60">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Button Content="X" Click="RemoveItem_Click" Tag="{Binding}"
+                                        <Button Content="✕" Click="RemoveItem_Click" Tag="{Binding}"
                                                 Background="#FFEBEE" Foreground="#E53935" BorderThickness="0"
-                                                Padding="8,4" Cursor="Hand"/>
+                                                Padding="8,4" Cursor="Hand" FontSize="12"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

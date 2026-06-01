@@ -29,6 +29,7 @@ public class SummaryViewModel : BaseViewModel, IRefreshable
     private string _searchText = string.Empty;
     private string _filterVendor = string.Empty;
     private string _filterAccessory = string.Empty;
+    private bool _showLowStockOnly;
 
     public ObservableCollection<StockSummaryRow> Rows { get => _filtered; set => SetProperty(ref _filtered, value); }
     public ObservableCollection<string> VendorFilter { get; } = new();
@@ -37,6 +38,7 @@ public class SummaryViewModel : BaseViewModel, IRefreshable
     public string SearchText { get => _searchText; set { SetProperty(ref _searchText, value); ApplyFilter(); } }
     public string FilterVendor { get => _filterVendor; set { SetProperty(ref _filterVendor, value); ApplyFilter(); } }
     public string FilterAccessory { get => _filterAccessory; set { SetProperty(ref _filterAccessory, value); ApplyFilter(); } }
+    public bool ShowLowStockOnly { get => _showLowStockOnly; set { SetProperty(ref _showLowStockOnly, value); ApplyFilter(); } }
 
     public RelayCommand ExportExcelCommand { get; }
     public RelayCommand ExportPdfCommand { get; }
@@ -48,7 +50,7 @@ public class SummaryViewModel : BaseViewModel, IRefreshable
         ExportExcelCommand = new RelayCommand(_ => ExportExcel());
         ExportPdfCommand = new RelayCommand(_ => ExportPdf());
         RefreshCommand = new RelayCommand(_ => Refresh());
-        ClearFilterCommand = new RelayCommand(_ => { SearchText = string.Empty; FilterVendor = string.Empty; FilterAccessory = string.Empty; });
+        ClearFilterCommand = new RelayCommand(_ => { SearchText = string.Empty; FilterVendor = string.Empty; FilterAccessory = string.Empty; ShowLowStockOnly = false; });
         Refresh();
     }
 
@@ -88,6 +90,7 @@ public class SummaryViewModel : BaseViewModel, IRefreshable
     {
         var q = SearchText.ToLower();
         var result = _rows.Where(r =>
+            (!ShowLowStockOnly || r.IsLowStock) &&
             (string.IsNullOrWhiteSpace(q) || r.Name.ToLower().Contains(q) || r.AccessoryCode.ToLower().Contains(q)) &&
             (string.IsNullOrEmpty(FilterVendor) || FilterVendor == "All" || r.VendorNames.Any(v => v == FilterVendor)) &&
             (string.IsNullOrEmpty(FilterAccessory) || FilterAccessory == "All" || r.Name == FilterAccessory));
@@ -99,8 +102,8 @@ public class SummaryViewModel : BaseViewModel, IRefreshable
         var dlg = new Microsoft.Win32.SaveFileDialog { Filter = "Excel|*.xlsx", FileName = $"StockReport_{DateTime.Now:yyyyMMdd}" };
         if (dlg.ShowDialog() == true)
         {
-            ReportService.Instance.ExportStockReport(dlg.FileName);
-            System.Windows.MessageBox.Show("Excel report exported successfully.", "Export", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            try { ReportService.Instance.ExportStockReport(dlg.FileName); System.Windows.MessageBox.Show("Excel exported.", "Export", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information); }
+            catch (Exception ex) { System.Windows.MessageBox.Show($"Export failed: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error); }
         }
     }
 
@@ -109,8 +112,8 @@ public class SummaryViewModel : BaseViewModel, IRefreshable
         var dlg = new Microsoft.Win32.SaveFileDialog { Filter = "PDF|*.pdf", FileName = $"StockReport_{DateTime.Now:yyyyMMdd}" };
         if (dlg.ShowDialog() == true)
         {
-            ReportService.Instance.ExportStockReportPdf(dlg.FileName);
-            System.Windows.MessageBox.Show("PDF report exported successfully.", "Export", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            try { ReportService.Instance.ExportStockReportPdf(dlg.FileName); System.Windows.MessageBox.Show("PDF exported.", "Export", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information); }
+            catch (Exception ex) { System.Windows.MessageBox.Show($"Export failed: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error); }
         }
     }
 }

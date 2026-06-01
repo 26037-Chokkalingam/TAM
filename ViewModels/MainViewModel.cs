@@ -5,7 +5,7 @@ public class MainViewModel : BaseViewModel
     private BaseViewModel _currentViewModel = null!;
     private string _activeNav = "Dashboard";
 
-    public DashboardViewModel Dashboard { get; } = new();
+    public DashboardViewModel Dashboard { get; }
     public VendorViewModel Vendors { get; } = new();
     public AccessoryViewModel Accessories { get; } = new();
     public PurchaseOrderViewModel PurchaseOrders { get; } = new();
@@ -21,27 +21,59 @@ public class MainViewModel : BaseViewModel
 
     public MainViewModel()
     {
+        Dashboard = new DashboardViewModel(NavigateTo);
         CurrentViewModel = Dashboard;
     }
 
-    public void NavigateTo(string name)
+    public void NavigateTo(string name, string? param = null)
     {
         ActiveNav = name;
-        BaseViewModel next = name switch
+        switch (name)
         {
-            "Dashboard" => Dashboard,
-            "Vendors" => Vendors,
-            "Accessories" => Accessories,
-            "PurchaseOrders" => PurchaseOrders,
-            "InwardOrders" => InwardOrders,
-            "OutwardOrders" => OutwardOrders,
-            "ReturnOrders" => ReturnOrders,
-            "Summary" => Summary,
-            "AuditLog" => AuditLog,
-            "Backup" => Backup,
-            _ => Dashboard
-        };
-        CurrentViewModel = next;
-        if (next is IRefreshable r) r.Refresh();
+            case "Vendors":
+                Vendors.Refresh();
+                CurrentViewModel = Vendors;
+                break;
+            case "Accessories":
+                Accessories.Refresh();
+                CurrentViewModel = Accessories;
+                break;
+            case "PurchaseOrders":
+                PurchaseOrders.Refresh();
+                if (param == "Pending") PurchaseOrders.FilterStatus = TAM.Models.POStatus.Draft;
+                CurrentViewModel = PurchaseOrders;
+                break;
+            case "InwardOrders":
+                InwardOrders.Refresh();
+                CurrentViewModel = InwardOrders;
+                break;
+            case "OutwardOrders":
+                OutwardOrders.Refresh();
+                CurrentViewModel = OutwardOrders;
+                break;
+            case "ReturnOrders":
+                ReturnOrders.Refresh();
+                CurrentViewModel = ReturnOrders;
+                break;
+            case "Summary":
+                Summary.ShowLowStockOnly = param == "LowStock";
+                Summary.Refresh();
+                CurrentViewModel = Summary;
+                break;
+            case "AuditLog":
+                AuditLog.Refresh();
+                CurrentViewModel = AuditLog;
+                break;
+            case "Backup":
+                CurrentViewModel = Backup;
+                break;
+            default:
+                Dashboard.Refresh();
+                CurrentViewModel = Dashboard;
+                break;
+        }
     }
+
+    // Keep original overload for sidebar navigation
+    public void NavigateTo(string name) => NavigateTo(name, null);
 }
