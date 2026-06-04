@@ -7,7 +7,11 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>TAM</AssemblyName>
     <RootNamespace>TAM</RootNamespace>
+    <ApplicationIcon>Assets\TAM.ico</ApplicationIcon>
   </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\TAM.ico"/>
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="ClosedXML" Version="0.102.1" />

@@ -1,6 +1,7 @@
 <Window x:Class="TAM.Dialogs.CloseOutwardDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:h="clr-namespace:TAM.Helpers"
         Title="Close Outward Order" Height="520" Width="680"
         WindowStyle="ToolWindow" ResizeMode="CanResize"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
@@ -37,7 +38,13 @@
                             <DataGridTextColumn Header="Accessory" Binding="{Binding AccessoryName}" Width="*" IsReadOnly="True"/>
                             <DataGridTextColumn Header="Dispatched" Binding="{Binding Quantity}" Width="90" IsReadOnly="True"/>
                             <DataGridTextColumn Header="Returned" Binding="{Binding ReturnedQuantity}" Width="90" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="Used *" Binding="{Binding UsedQuantity, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
+                            <DataGridTextColumn Header="Used *" Binding="{Binding UsedQuantity, UpdateSourceTrigger=PropertyChanged}" Width="90">
+                                <DataGridTextColumn.EditingElementStyle>
+                                    <Style TargetType="TextBox">
+                                        <Setter Property="h:NumericInput.IsDecimal" Value="True"/>
+                                    </Style>
+                                </DataGridTextColumn.EditingElementStyle>
+                            </DataGridTextColumn>
                             <DataGridTextColumn Header="In Hand" Binding="{Binding InHand}" Width="90" IsReadOnly="True"/>
                         </DataGrid.Columns>
                     </DataGrid>

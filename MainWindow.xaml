@@ -4,7 +4,8 @@
         xmlns:vm="clr-namespace:TAM.ViewModels"
         Title="TAM – TrackFun Accessories Management"
         Height="760" Width="1200" MinHeight="600" MinWidth="900"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="CenterScreen" WindowState="Maximized"
+        Icon="pack://application:,,,/Assets/TAM.ico"
         FontFamily="Segoe UI">
     <Window.DataContext>
         <vm:MainViewModel/>

@@ -1,6 +1,7 @@
 <Window x:Class="TAM.Dialogs.AccessoryDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:h="clr-namespace:TAM.Helpers"
         Title="Accessory" Height="500" Width="500"
         WindowStyle="ToolWindow" ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
@@ -59,11 +60,13 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Current Stock" Style="{StaticResource SectionLabel}"/>
-                        <TextBox x:Name="StockBox" Style="{StaticResource FormTextBox}" Text="0"/>
+                        <TextBox x:Name="StockBox" Style="{StaticResource FormTextBox}" Text="0"
+                                 h:NumericInput.IsDecimal="True"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2">
                         <TextBlock Text="Minimum Stock (alert)" Style="{StaticResource SectionLabel}"/>
-                        <TextBox x:Name="MinStockBox" Style="{StaticResource FormTextBox}" Text="0"/>
+                        <TextBox x:Name="MinStockBox" Style="{StaticResource FormTextBox}" Text="0"
+                                 h:NumericInput.IsDecimal="True"/>
                     </StackPanel>
                 </Grid>
 
