@@ -21,7 +21,9 @@ public partial class AddonItemDialog : Window
     {
         if (string.IsNullOrWhiteSpace(NameBox.Text))
         {
-            MessageBox.Show("Name is required.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+            ErrorText.Text = "Name is required.";
+            ErrorText.Visibility = Visibility.Visible;
+            NameBox.Focus();
             return;
         }
         ItemName = NameBox.Text.Trim();
