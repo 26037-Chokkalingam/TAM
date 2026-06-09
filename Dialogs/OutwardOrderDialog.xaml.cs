@@ -21,8 +21,10 @@ public class OutwardItemRow : System.ComponentModel.INotifyPropertyChanged
         }
     }
     public decimal Quantity { get; set; }
+    public decimal OriginalQty { get; set; }
     public string AccessoryName => DataService.Instance.GetAccessoryName(AccessoryId);
-    public decimal AvailableStock => DataService.Instance.GetAccessoryById(AccessoryId)?.CurrentStock ?? 0;
+    // When editing, current stock already has this order's qty deducted — add it back to show true available
+    public decimal AvailableStock => (DataService.Instance.GetAccessoryById(AccessoryId)?.CurrentStock ?? 0) + OriginalQty;
     public string Unit => DataService.Instance.GetAccessoryById(AccessoryId)?.Unit ?? string.Empty;
     public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
     void OnPC(string n) => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(n));
@@ -62,7 +64,7 @@ public partial class OutwardOrderDialog : Window
             OutwardDatePicker.SelectedDate = outward.OutwardDate;
             NotesBox.Text = outward.Notes;
             foreach (var item in outward.Items)
-                ItemRows.Add(new OutwardItemRow { AccessoryId = item.AccessoryId, Quantity = item.Quantity });
+                ItemRows.Add(new OutwardItemRow { AccessoryId = item.AccessoryId, Quantity = item.Quantity, OriginalQty = item.Quantity });
         }
         ItemsGrid.ItemsSource = ItemRows;
     }
