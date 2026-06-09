@@ -29,8 +29,7 @@
                 <TextBlock Text="Category:" VerticalAlignment="Center" Margin="16,0,8,0" Foreground="{StaticResource TextSecondary}"/>
                 <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding FilterCategory}"
                           Style="{StaticResource FormComboBox}" Width="140" VerticalAlignment="Center"/>
-                <Button Content="Edit" Command="{Binding EditCommand}" Style="{StaticResource SecondaryButton}" Margin="16,0,0,0" VerticalAlignment="Center"/>
-                <Button Content="Delete" Command="{Binding DeleteCommand}" Style="{StaticResource DangerButton}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                <Button Content="Delete" Command="{Binding DeleteCommand}" Style="{StaticResource DangerButton}" Margin="16,0,0,0" VerticalAlignment="Center"/>
                 <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0" VerticalAlignment="Center"/>
             </WrapPanel>
         </Border>

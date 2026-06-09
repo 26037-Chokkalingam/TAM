@@ -16,6 +16,7 @@ public class StockSummaryRow
     public decimal TotalInward { get; set; }
     public decimal TotalOutward { get; set; }
     public decimal TotalReturned { get; set; }
+    public decimal InVendorHand { get; set; }
     public bool IsLowStock => MinimumStock > 0 && CurrentStock <= MinimumStock;
     public string StockStatus => IsLowStock ? "Low Stock" : "OK";
     public List<string> VendorNames { get; set; } = new();
@@ -67,13 +68,16 @@ public class SummaryViewModel : BaseViewModel, IRefreshable
             var totalIn = inwards.SelectMany(i => i.Items).Where(it => it.AccessoryId == a.AccessoryId).Sum(it => it.Quantity);
             var totalOut = outwards.SelectMany(o => o.Items).Where(it => it.AccessoryId == a.AccessoryId).Sum(it => it.Quantity);
             var totalRet = returns.SelectMany(r => r.Items).Where(it => it.AccessoryId == a.AccessoryId).Sum(it => it.ReturnedQuantity);
+            var computedStock = totalIn - totalOut + totalRet;
+            var inVendorHand = totalOut - totalRet;
             var vendors = inwards.Where(i => i.Items.Any(it => it.AccessoryId == a.AccessoryId))
                 .Select(i => DataService.Instance.GetVendorName(i.VendorId)).Distinct().ToList();
             _rows.Add(new StockSummaryRow
             {
                 AccessoryCode = a.AccessoryCode, Name = a.Name, Category = a.Category,
-                Unit = a.Unit, CurrentStock = a.CurrentStock, MinimumStock = a.MinimumStock,
+                Unit = a.Unit, CurrentStock = computedStock, MinimumStock = a.MinimumStock,
                 TotalInward = totalIn, TotalOutward = totalOut, TotalReturned = totalRet,
+                InVendorHand = inVendorHand,
                 VendorNames = vendors
             });
         }

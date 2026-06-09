@@ -103,6 +103,7 @@ public static class DetailInfoBuilder
         {
             new() { Label = "Outward No.", Value = out1.OutwardNumber },
             new() { Label = "Recipient", Value = out1.Recipient },
+            new() { Label = "Style", Value = out1.Style },
             new() { Label = "Purpose", Value = out1.Purpose },
             new() { Label = "Status", Value = out1.Status.ToString() },
             new() { Label = "Outward Date", Value = out1.OutwardDate.ToString("dd-MM-yyyy") },
@@ -129,6 +130,7 @@ public static class DetailInfoBuilder
         {
             new() { Label = "Return No.", Value = ret.ReturnNumber },
             new() { Label = "Outward Order", Value = DataService.Instance.GetOutwardById(ret.OutwardId)?.OutwardNumber ?? "-" },
+            new() { Label = "Style", Value = DataService.Instance.GetOutwardById(ret.OutwardId)?.Style ?? "-" },
             new() { Label = "Return Type", Value = ret.IsFullReturn ? "Full Return" : "Partial Return" },
             new() { Label = "Return Date", Value = ret.ReturnDate.ToString("dd-MM-yyyy") },
             new() { Label = "Notes", Value = ret.Notes },

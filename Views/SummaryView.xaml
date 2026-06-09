@@ -70,6 +70,7 @@
                     <DataGridTextColumn Header="Total In" Binding="{Binding TotalInward}" Width="80"/>
                     <DataGridTextColumn Header="Total Out" Binding="{Binding TotalOutward}" Width="80"/>
                     <DataGridTextColumn Header="Returned" Binding="{Binding TotalReturned}" Width="80"/>
+                    <DataGridTextColumn Header="In Vendor Hand" Binding="{Binding InVendorHand}" Width="110"/>
                     <DataGridTemplateColumn Header="Status" Width="90" SortMemberPath="StockStatus">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>

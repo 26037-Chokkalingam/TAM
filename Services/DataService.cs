@@ -35,6 +35,19 @@ public class DataService
         _outwardOrders = Load<List<OutwardOrder>>("outward_orders.json") ?? new();
         _returnOrders = Load<List<ReturnOrder>>("return_orders.json") ?? new();
         _addons = Load<AddonData>("addons.json") ?? new();
+        RecalculateAllStocks();
+    }
+
+    private void RecalculateAllStocks()
+    {
+        foreach (var acc in _accessories)
+        {
+            acc.CurrentStock =
+                _inwardOrders.SelectMany(i => i.Items).Where(it => it.AccessoryId == acc.AccessoryId).Sum(it => it.Quantity)
+                - _outwardOrders.SelectMany(o => o.Items).Where(it => it.AccessoryId == acc.AccessoryId).Sum(it => it.Quantity)
+                + _returnOrders.SelectMany(r => r.Items).Where(it => it.AccessoryId == acc.AccessoryId).Sum(it => it.ReturnedQuantity);
+        }
+        Save("accessories.json", _accessories);
     }
 
     private T? Load<T>(string file) where T : class
@@ -271,11 +284,11 @@ public class DataService
         var oldJson = JsonConvert.SerializeObject(_outwardOrders[idx]);
         var oldState = JsonConvert.DeserializeObject<OutwardOrder>(oldJson)!;
 
-        // Reverse old net stock impact (qty dispatched minus what was already returned)
+        // Reverse old outward dispatch — returns are credited separately via CreateReturn, don't touch them here
         foreach (var item in oldState.Items)
         {
             var acc = _accessories.FirstOrDefault(a => a.AccessoryId == item.AccessoryId);
-            if (acc != null) acc.CurrentStock += item.Quantity - item.ReturnedQuantity;
+            if (acc != null) acc.CurrentStock += item.Quantity;
         }
         // Validate new items against restored stock
         foreach (var item in updated.Items)
@@ -309,7 +322,7 @@ public class DataService
         foreach (var item in oldState.Items)
         {
             var acc = _accessories.FirstOrDefault(a => a.AccessoryId == item.AccessoryId);
-            if (acc != null) acc.CurrentStock -= item.Quantity - item.ReturnedQuantity;
+            if (acc != null) acc.CurrentStock -= item.Quantity;
         }
     }
 
