@@ -23,6 +23,7 @@ public class InwardOrderViewModel : BaseViewModel, IRefreshable
 
     public RelayCommand AddDirectCommand { get; }
     public RelayCommand EditCommand { get; }
+    public RelayCommand DeleteCommand { get; }
     public RelayCommand RefreshCommand { get; }
     public RelayCommand ViewHistoryCommand { get; }
     public RelayCommand ClearFilterCommand { get; }
@@ -31,6 +32,7 @@ public class InwardOrderViewModel : BaseViewModel, IRefreshable
     {
         AddDirectCommand = new RelayCommand(_ => OpenAddDirect());
         EditCommand = new RelayCommand(_ => OpenEdit(), _ => Selected != null);
+        DeleteCommand = new RelayCommand(_ => DeleteSelected(), _ => Selected != null);
         RefreshCommand = new RelayCommand(_ => Refresh());
         ViewHistoryCommand = new RelayCommand(_ => ViewHistory(), _ => Selected != null);
         ClearFilterCommand = new RelayCommand(_ => { SearchText = string.Empty; FilterDateFrom = null; FilterDateTo = null; });
@@ -73,6 +75,17 @@ public class InwardOrderViewModel : BaseViewModel, IRefreshable
         if (Selected == null) return;
         var dlg = new TAM.Dialogs.InwardOrderDialog(Selected);
         if (dlg.ShowDialog() == true) Refresh();
+    }
+
+    private void DeleteSelected()
+    {
+        if (Selected == null) return;
+        if (MessageBox.Show($"Delete inward order '{Selected.InwardNumber}'?\n\nThis will reduce stock by the quantities in this order.",
+                "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+        {
+            DataService.Instance.DeleteInwardOrder(Selected.InwardId);
+            Refresh();
+        }
     }
 
     private void ViewHistory()

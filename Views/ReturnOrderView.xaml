@@ -27,6 +27,7 @@
                 <DatePicker SelectedDate="{Binding FilterDateTo, UpdateSourceTrigger=PropertyChanged}"
                             Width="120" FontFamily="Segoe UI" FontSize="13" VerticalAlignment="Center"/>
                 <Button Content="Edit" Command="{Binding EditCommand}" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0"/>
+                <Button Content="Delete" Command="{Binding DeleteCommand}" Style="{StaticResource DangerButton}" Margin="8,0,0,0"/>
                 <Button Content="Edit History" Command="{Binding ViewHistoryCommand}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"/>
                 <Button Content="Clear" Command="{Binding ClearFilterCommand}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"/>
                 <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"/>
@@ -44,6 +45,11 @@
                     <DataGridTextColumn Header="Outward Order" Width="130">
                         <DataGridTextColumn.Binding>
                             <Binding Path="OutwardId" Converter="{StaticResource OutwardIdToNum}"/>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Style" Width="100">
+                        <DataGridTextColumn.Binding>
+                            <Binding Path="OutwardId" Converter="{StaticResource OutwardIdToStyle}"/>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
                     <DataGridTemplateColumn Header="Type" Width="110">

@@ -142,3 +142,11 @@ public class OutwardIdToNumberConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         => throw new NotImplementedException();
 }
+
+public class OutwardIdToStyleConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        => value is string id ? (DataService.Instance.GetOutwardById(id)?.Style ?? "-") : "-";
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}

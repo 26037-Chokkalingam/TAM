@@ -27,6 +27,7 @@ public class OutwardOrderViewModel : BaseViewModel, IRefreshable
     public RelayCommand EditCommand { get; }
     public RelayCommand ReturnCommand { get; }
     public RelayCommand CloseOrderCommand { get; }
+    public RelayCommand DeleteCommand { get; }
     public RelayCommand RefreshCommand { get; }
     public RelayCommand ViewHistoryCommand { get; }
     public RelayCommand ClearFilterCommand { get; }
@@ -39,6 +40,7 @@ public class OutwardOrderViewModel : BaseViewModel, IRefreshable
             Selected.Status != OutwardOrderStatus.FullyReturned &&
             Selected.Status != OutwardOrderStatus.Closed);
         CloseOrderCommand = new RelayCommand(_ => OpenClose(), _ => Selected != null && Selected.Status != OutwardOrderStatus.Closed);
+        DeleteCommand = new RelayCommand(_ => DeleteSelected(), _ => Selected != null);
         RefreshCommand = new RelayCommand(_ => Refresh());
         ViewHistoryCommand = new RelayCommand(_ => ViewHistory(), _ => Selected != null);
         ClearFilterCommand = new RelayCommand(_ => { FilterStatus = null; SearchText = string.Empty; FilterDateFrom = null; FilterDateTo = null; });
@@ -93,6 +95,20 @@ public class OutwardOrderViewModel : BaseViewModel, IRefreshable
         if (Selected == null) return;
         var dlg = new TAM.Dialogs.CloseOutwardDialog(Selected);
         if (dlg.ShowDialog() == true) Refresh();
+    }
+
+    private void DeleteSelected()
+    {
+        if (Selected == null) return;
+        var returns = DataService.Instance.GetReturnOrders().Count(r => r.OutwardId == Selected.OutwardId);
+        var msg = returns > 0
+            ? $"Delete outward order '{Selected.OutwardNumber}'?\n\nThis will also delete {returns} linked return order(s) and restore stock."
+            : $"Delete outward order '{Selected.OutwardNumber}'?\n\nThis will restore stock for all dispatched items.";
+        if (MessageBox.Show(msg, "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+        {
+            DataService.Instance.DeleteOutwardOrder(Selected.OutwardId);
+            Refresh();
+        }
     }
 
     private void ViewHistory()

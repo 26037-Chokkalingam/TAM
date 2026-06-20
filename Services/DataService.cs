@@ -559,6 +559,97 @@ public class DataService
         return true;
     }
 
+    public bool SaveOutwardDraft(OutwardOrder outward, Dictionary<string, decimal> usedQtys, out string error)
+    {
+        error = string.Empty;
+        var idx = _outwardOrders.FindIndex(x => x.OutwardId == outward.OutwardId);
+        if (idx < 0) { error = "Order not found."; return false; }
+
+        foreach (var item in outward.Items)
+        {
+            var used = usedQtys.TryGetValue(item.ItemId, out var u) ? u : 0;
+            if (used < 0) { error = "Used quantity cannot be negative."; return false; }
+            if (used + item.ReturnedQuantity > item.Quantity)
+            {
+                var accName = GetAccessoryName(item.AccessoryId);
+                error = $"Used + Returned ({used + item.ReturnedQuantity}) exceeds dispatched ({item.Quantity}) for '{accName}'.";
+                return false;
+            }
+        }
+
+        var oldJson = JsonConvert.SerializeObject(_outwardOrders[idx]);
+        foreach (var item in outward.Items)
+            item.UsedQuantity = usedQtys.TryGetValue(item.ItemId, out var u) ? u : 0;
+
+        outward.EditHistory.Insert(0, new EditHistoryEntry
+        {
+            ChangeDescription = "Draft saved (used quantities updated)",
+            SnapshotJson = oldJson,
+            ChangedAt = DateTime.Now
+        });
+        _outwardOrders[idx] = outward;
+        Save("outward_orders.json", _outwardOrders);
+        AuditService.Instance.Log("UPDATE", "OutwardOrder", $"Draft saved for outward order: {outward.OutwardNumber}", outward.OutwardId);
+        return true;
+    }
+
+    // ── DELETE ORDERS ────────────────────────────────────────────────────────
+
+    public void DeleteInwardOrder(string id)
+    {
+        var inward = _inwardOrders.FirstOrDefault(x => x.InwardId == id);
+        if (inward == null) return;
+        _inwardOrders.Remove(inward);
+        Save("inward_orders.json", _inwardOrders);
+        RecalculateAllStocks();
+        AuditService.Instance.Log("DELETE", "InwardOrder", $"Deleted inward order: {inward.InwardNumber}", id);
+    }
+
+    public void DeleteOutwardOrder(string id)
+    {
+        var outward = _outwardOrders.FirstOrDefault(x => x.OutwardId == id);
+        if (outward == null) return;
+        var linkedReturns = _returnOrders.Where(r => r.OutwardId == id).ToList();
+        foreach (var ret in linkedReturns) _returnOrders.Remove(ret);
+        _outwardOrders.Remove(outward);
+        Save("outward_orders.json", _outwardOrders);
+        Save("return_orders.json", _returnOrders);
+        RecalculateAllStocks();
+        AuditService.Instance.Log("DELETE", "OutwardOrder",
+            $"Deleted outward order: {outward.OutwardNumber} and {linkedReturns.Count} linked return(s)", id);
+    }
+
+    public void DeleteReturnOrder(string id)
+    {
+        var ret = _returnOrders.FirstOrDefault(x => x.ReturnId == id);
+        if (ret == null) return;
+        _returnOrders.Remove(ret);
+
+        var outward = _outwardOrders.FirstOrDefault(o => o.OutwardId == ret.OutwardId);
+        if (outward != null)
+        {
+            foreach (var oi in outward.Items) oi.ReturnedQuantity = 0;
+            foreach (var r in _returnOrders.Where(r => r.OutwardId == outward.OutwardId))
+                foreach (var ri in r.Items)
+                {
+                    var oi = outward.Items.FirstOrDefault(i => i.AccessoryId == ri.AccessoryId);
+                    if (oi != null) oi.ReturnedQuantity += ri.ReturnedQuantity;
+                }
+            outward.Status = outward.Items.All(i => i.ReturnedQuantity >= i.Quantity)
+                ? OutwardOrderStatus.FullyReturned
+                : outward.Items.Any(i => i.ReturnedQuantity > 0)
+                    ? OutwardOrderStatus.PartiallyReturned
+                    : OutwardOrderStatus.Active;
+            var oidx = _outwardOrders.FindIndex(x => x.OutwardId == outward.OutwardId);
+            if (oidx >= 0) _outwardOrders[oidx] = outward;
+            Save("outward_orders.json", _outwardOrders);
+        }
+
+        Save("return_orders.json", _returnOrders);
+        RecalculateAllStocks();
+        AuditService.Instance.Log("DELETE", "ReturnOrder", $"Deleted return order: {ret.ReturnNumber}", id);
+    }
+
     // ── LOOKUPS ──────────────────────────────────────────────────────────────
 
     public Vendor? GetVendorById(string id) => _vendors.FirstOrDefault(v => v.VendorId == id);

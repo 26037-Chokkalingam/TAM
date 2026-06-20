@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using TAM.Helpers;
 using TAM.Models;
 using TAM.Services;
@@ -21,6 +22,7 @@ public class ReturnOrderViewModel : BaseViewModel, IRefreshable
     public DateTime? FilterDateTo { get => _filterDateTo; set { SetProperty(ref _filterDateTo, value); ApplyFilter(); } }
 
     public RelayCommand EditCommand { get; }
+    public RelayCommand DeleteCommand { get; }
     public RelayCommand RefreshCommand { get; }
     public RelayCommand ViewHistoryCommand { get; }
     public RelayCommand ClearFilterCommand { get; }
@@ -28,6 +30,7 @@ public class ReturnOrderViewModel : BaseViewModel, IRefreshable
     public ReturnOrderViewModel()
     {
         EditCommand = new RelayCommand(_ => OpenEdit(), _ => Selected != null);
+        DeleteCommand = new RelayCommand(_ => DeleteSelected(), _ => Selected != null);
         RefreshCommand = new RelayCommand(_ => Refresh());
         ViewHistoryCommand = new RelayCommand(_ => ViewHistory(), _ => Selected != null);
         ClearFilterCommand = new RelayCommand(_ => { SearchText = string.Empty; FilterDateFrom = null; FilterDateTo = null; });
@@ -62,6 +65,18 @@ public class ReturnOrderViewModel : BaseViewModel, IRefreshable
         if (Selected == null) return;
         var dlg = new TAM.Dialogs.ReturnOrderDialog(Selected);
         if (dlg.ShowDialog() == true) Refresh();
+    }
+
+    private void DeleteSelected()
+    {
+        if (Selected == null) return;
+        var outwardNum = DataService.Instance.GetOutwardById(Selected.OutwardId)?.OutwardNumber ?? "-";
+        if (MessageBox.Show($"Delete return order '{Selected.ReturnNumber}'?\n\nThis will revert the stock credit and update outward order '{outwardNum}'.",
+                "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+        {
+            DataService.Instance.DeleteReturnOrder(Selected.ReturnId);
+            Refresh();
+        }
     }
 
     private void ViewHistory()

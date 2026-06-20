@@ -33,6 +33,7 @@
                 <DatePicker SelectedDate="{Binding FilterDateTo, UpdateSourceTrigger=PropertyChanged}"
                             Width="120" FontFamily="Segoe UI" FontSize="13" VerticalAlignment="Center"/>
                 <Button Content="Edit" Command="{Binding EditCommand}" Style="{StaticResource SecondaryButton}" Margin="12,0,0,0"/>
+                <Button Content="Delete" Command="{Binding DeleteCommand}" Style="{StaticResource DangerButton}" Margin="8,0,0,0"/>
                 <Button Content="Edit History" Command="{Binding ViewHistoryCommand}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"/>
                 <Button Content="Clear" Command="{Binding ClearFilterCommand}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"/>
                 <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"/>

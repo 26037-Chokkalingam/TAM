@@ -39,6 +39,7 @@
             <h:AccessoryIdToNameConverter x:Key="AccessoryName"/>
             <h:POIdToRefConverter x:Key="POIdToRef"/>
             <h:OutwardIdToNumberConverter x:Key="OutwardIdToNum"/>
+            <h:OutwardIdToStyleConverter x:Key="OutwardIdToStyle"/>
 
             <!-- Base Button Style -->
             <Style x:Key="PrimaryButton" TargetType="Button">

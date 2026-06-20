@@ -95,6 +95,34 @@ public partial class CloseOutwardDialog : Window
         DialogResult = true;
     }
 
+    private void SaveDraftBtn_Click(object sender, RoutedEventArgs e)
+    {
+        ErrorPanel.Visibility = Visibility.Collapsed;
+        try { ItemsGrid.CommitEdit(DataGridEditingUnit.Row, true); } catch { }
+
+        var usedQtys = new Dictionary<string, decimal>();
+        foreach (var row in ItemRows)
+        {
+            if (row.UsedQuantity < 0) { ShowError("Used quantity cannot be negative."); return; }
+            if (row.UsedQuantity + row.ReturnedQuantity > row.Quantity)
+            {
+                ShowError($"Used + Returned ({row.UsedQuantity + row.ReturnedQuantity}) exceeds dispatched ({row.Quantity}) for '{row.AccessoryName}'.");
+                return;
+            }
+            usedQtys[row.ItemId] = row.UsedQuantity;
+        }
+
+        _outward.Notes = string.IsNullOrWhiteSpace(NotesBox.Text) ? _outward.Notes : NotesBox.Text.Trim();
+
+        if (!DataService.Instance.SaveOutwardDraft(_outward, usedQtys, out var error))
+        {
+            ShowError(error);
+            return;
+        }
+
+        DialogResult = true;
+    }
+
     private void ShowError(string msg)
     {
         ErrorText.Text = msg;
