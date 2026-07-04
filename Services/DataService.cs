@@ -593,6 +593,34 @@ public class DataService
         return true;
     }
 
+    public bool ReopenOutwardOrder(OutwardOrder outward, out string error)
+    {
+        error = string.Empty;
+        var idx = _outwardOrders.FindIndex(x => x.OutwardId == outward.OutwardId);
+        if (idx < 0) { error = "Order not found."; return false; }
+        if (outward.Status != OutwardOrderStatus.Closed) { error = "Order is not closed."; return false; }
+
+        var oldJson = JsonConvert.SerializeObject(_outwardOrders[idx]);
+
+        // Recalculate status from actual return data
+        outward.Status = outward.Items.All(i => i.ReturnedQuantity >= i.Quantity)
+            ? OutwardOrderStatus.FullyReturned
+            : outward.Items.Any(i => i.ReturnedQuantity > 0)
+                ? OutwardOrderStatus.PartiallyReturned
+                : OutwardOrderStatus.Active;
+
+        outward.EditHistory.Insert(0, new EditHistoryEntry
+        {
+            ChangeDescription = "Order re-opened",
+            SnapshotJson = oldJson,
+            ChangedAt = DateTime.Now
+        });
+        _outwardOrders[idx] = outward;
+        Save("outward_orders.json", _outwardOrders);
+        AuditService.Instance.Log("UPDATE", "OutwardOrder", $"Re-opened outward order: {outward.OutwardNumber}", outward.OutwardId);
+        return true;
+    }
+
     // ── DELETE ORDERS ────────────────────────────────────────────────────────
 
     public void DeleteInwardOrder(string id)

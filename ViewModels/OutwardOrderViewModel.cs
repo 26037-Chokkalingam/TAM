@@ -27,6 +27,7 @@ public class OutwardOrderViewModel : BaseViewModel, IRefreshable
     public RelayCommand EditCommand { get; }
     public RelayCommand ReturnCommand { get; }
     public RelayCommand CloseOrderCommand { get; }
+    public RelayCommand ReopenCommand { get; }
     public RelayCommand DeleteCommand { get; }
     public RelayCommand RefreshCommand { get; }
     public RelayCommand ViewHistoryCommand { get; }
@@ -40,6 +41,7 @@ public class OutwardOrderViewModel : BaseViewModel, IRefreshable
             Selected.Status != OutwardOrderStatus.FullyReturned &&
             Selected.Status != OutwardOrderStatus.Closed);
         CloseOrderCommand = new RelayCommand(_ => OpenClose(), _ => Selected != null && Selected.Status != OutwardOrderStatus.Closed);
+        ReopenCommand = new RelayCommand(_ => ReopenSelected(), _ => Selected != null && Selected.Status == OutwardOrderStatus.Closed);
         DeleteCommand = new RelayCommand(_ => DeleteSelected(), _ => Selected != null);
         RefreshCommand = new RelayCommand(_ => Refresh());
         ViewHistoryCommand = new RelayCommand(_ => ViewHistory(), _ => Selected != null);
@@ -95,6 +97,18 @@ public class OutwardOrderViewModel : BaseViewModel, IRefreshable
         if (Selected == null) return;
         var dlg = new TAM.Dialogs.CloseOutwardDialog(Selected);
         if (dlg.ShowDialog() == true) Refresh();
+    }
+
+    private void ReopenSelected()
+    {
+        if (Selected == null) return;
+        if (MessageBox.Show($"Re-open '{Selected.OutwardNumber}'?\n\nThis will allow editing, processing returns, and closing again. The action will be logged in edit history.",
+                "Re-open Order", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+        {
+            if (!DataService.Instance.ReopenOutwardOrder(Selected, out var error))
+                MessageBox.Show(error, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Refresh();
+        }
     }
 
     private void DeleteSelected()
